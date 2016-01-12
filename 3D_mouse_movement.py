@@ -50,15 +50,19 @@ class calibration_testing:
                 joint_orientation1 = random.uniform(-4.53786, 4.53786)
                 joint_orientation2 = random.uniform(-1.39626, 1.39626)
                 joint_orientation3 = random.uniform(-1.39626, 1.39626)
-                print joint_orientation1,joint_orientation2,joint_orientation3
-                self._robot.delta_move_cartesian_translation([0.0,0.0,0.025])
+                self._robot.delta_move_cartesian_translation([0.0,0.0,0.01])
                 self._robot.move_joint_list([joint_orientation1,joint_orientation2,joint_orientation3],[3,4,5])
                 move_mode += 1
                 print self._robot.get_current_cartesian_position().p
             if self.mouse_buttons()[1] == 1:
                 slow_speed = not slow_speed
-                time.sleep(.2)
+                time.sleep(.5)
                 print "Slow speed is", slow_speed
+            """
+            if self.mouse_buttons()[1] == 1:
+                self.open_jaw()
+                self.close_jaw()
+            """
             time.sleep(0.01) # 0.01 is 10 ms
             
             
