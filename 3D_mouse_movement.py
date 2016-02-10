@@ -1,8 +1,8 @@
-#created on january 5th 2016
+#created on January 5th 2016
 
 #to do:
-# -get joint position values
-# -write all values to a comma separated value file
+#
+#
 
 import sys
 from dvrk.arm import * 
@@ -34,6 +34,11 @@ class calibration_testing:
         return self._last_buttons
     
     def run(self):
+        joint_positions = []
+        cartesian_positions = []
+        sample_nb = 0
+        acceleration_counter = 1.0
+
         self._robot.move_joint_list([0.0,0.0,0.1],[0,1,2])
         random.seed()
         joint_orientation1 = random.uniform(-4.53786, 4.53786)
@@ -41,11 +46,19 @@ class calibration_testing:
         joint_orientation3 = random.uniform(-1.39626, 1.39626)
         self._robot.move_joint_list([joint_orientation1,joint_orientation2,joint_orientation3,0.0],[3,4,5,6])
 
-        joint_positions = []
-        cartesian_positions = []
-        sample_nb = 0
-        acceleration_counter = 1.0
-        slow_speed = False
+        """
+        self._robot.move_joint_list([0.0,0.0,0.0,0.0],[3,4,5,6])
+        range_of_motion = [ [-4.53786, 4.53786], [-1.39626, 1.39626], [-1.39626, 1.39626]]
+        move_amounts = []
+        joint_orientations = []
+        for i in range(3):
+            move_amounts.append(( range_of_motion[i][(1)] - range_of_motion[i][0] ) / sample_nb)
+        for i in range(3):
+            joint_orintations.append(range_of_motion[i][0] + ( move_amounts[i] * sample_nb )
+        self._robot.move_joint_list([joint_orientations[0],joint_orientations[1],joint_orientation[2],0.0],[3,4,5,6])
+        
+        """
+
         while sample_nb < 10:
             if self._last_axes[0] != 0 or self._last_axes[1] != 0 or self._last_axes[2] != 0:
                 acceleration_counter += 0.03
