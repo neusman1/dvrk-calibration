@@ -1,7 +1,7 @@
 #created on January 5th 2016
 
 #to do:
-# 
+# Continue data collection w/ higher accuracy taken
 
 import sys
 from dvrk.arm import * 
@@ -43,8 +43,11 @@ class calibration_testing:
         density = 3
         joint_motions = [ 0, 0, 0]
         joint_indexs = [ 0, 0, 0]
-        
+
+        self._robot.move_joint_list([0.0,0.0,0.1,0.0,0.0,0.0,0.0],[0,1,2,3,4,5,6])
+        time.sleep(1)
         print "Please set a refence point"
+
         while sample_nb < ((density ** 3) + 1):
             if self._last_axes[0] != 0 or self._last_axes[1] != 0 or self._last_axes[2] != 0:
                 acceleration_counter += 0.03
@@ -61,41 +64,37 @@ class calibration_testing:
                 recorded_cartesian_positions.append(list(self._robot.get_current_cartesian_position().p)[:])
                 recorded_joint_positions.append(list(self._robot.get_current_joint_position())[:])
                 print recorded_cartesian_positions[sample_nb]
-                #calculate next joint position
-                shaft_remainder = sample_nb % (density ** 2)
-                shaft_index = (sample_nb - shaft_remainder) / (density ** 2)
-                finger_index = shaft_remainder % density
-                wrist_index = (shaft_remainder - finger_index) / density
-                joint_indexs = [shaft_index, wrist_index, finger_index]
-                for joint in range(3):
-                    joint_motions[joint] = range_of_motion[joint][0] + (joint_indexs[joint]*((range_of_motion[joint][1] - range_of_motion[joint][0])/(density -1)))
-                #move to next joint position
-                self._robot.delta_move_cartesian_translation([0.0,0.0,0.05])
                 time.sleep(.2)
-                self._robot.move_joint_list([joint_motions[0], joint_motions[1], joint_motions[2], 0.0],[3,4,5,6])
-                time.sleep(.2)
-                #move close to next cartesian position
-                cartesian_totals = []
-                average_cartesian_positions = []
-                for axis in range(3):
-                    for cartesian_sample in range(len(recorded_cartesian_positions)):
-                        cartesian_totals.append(recorded_cartesian_positions[cartesian_sample][axis])
-                    average_cartesian_positions.append(sum(cartesian_totals)/len(cartesian_totals))
+                if sample_nb < density**3:
+                    #calculate next joint position
+                    shaft_remainder = sample_nb % (density ** 2)
+                    shaft_index = (sample_nb - shaft_remainder) / (density ** 2)
+                    finger_index = shaft_remainder % density
+                    wrist_index = (shaft_remainder - finger_index) / density
+                    joint_indexs = [shaft_index, wrist_index, finger_index]
+                    for joint in range(3):
+                        joint_motions[joint] = range_of_motion[joint][0] + (joint_indexs[joint]*((range_of_motion[joint][1] - range_of_motion[joint][0])/(density -1)))
+                    #move to next joint position
+                    self._robot.delta_move_cartesian_translation([0.0,0.0,0.05])
+                    time.sleep(.2)
+                    self._robot.move_joint_list([joint_motions[0], joint_motions[1], joint_motions[2], 0.0],[3,4,5,6])
+                    time.sleep(.2)
+                    #move close to next cartesian position
                     cartesian_totals = []
-                self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.005])              
-                time.sleep(.2)
+                    average_cartesian_positions = []
+                    for axis in range(3):
+                        for cartesian_sample in range(len(recorded_cartesian_positions)):
+                            cartesian_totals.append(recorded_cartesian_positions[cartesian_sample][axis])
+                        average_cartesian_positions.append(sum(cartesian_totals)/len(cartesian_totals))
+                        cartesian_totals = []
+                    self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.005])              
+                    time.sleep(.2)
                 sample_nb += 1
-                if sample_nb < 28:
+                if sample_nb < ((density**3)+1):
                     print "you are on sample: ", sample_nb, " / ", density**3
-                if sample_nb >= 28:
+                elif sample_nb == ((density**3)+1):
                     print "finished"
-            
-            """
-            if self.mouse_buttons()[1] == 1 and self.previous_mouse_buttons[1] == 0:
-                self.open_jaw()
-            if self.mouse_buttons()[1] == 0 and self.previous_mouse_buttons[1] == 1:
-                self.close_jaw()
-            """
+           
             self.previous_mouse_buttons[:] = self.mouse_buttons()
             time.sleep(0.03) # 0.03 is 30 ms, which is the spacenav's highest output frequency
 
@@ -105,11 +104,9 @@ class calibration_testing:
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
         writer.writerow(["cartesian positions"," "," ","joint positions"])
-        for i in range(10):
-            writer.writerow(recorded_cartesian_positions[i] + recorded_joint_positions[i])
+        for i in range(density**3):
+            writer.writerow(recorded_cartesian_positions[(i+1)] + recorded_joint_positions[(i+1)])
 
-
-            
 
 if (len(sys.argv) != 2):
     print sys.argv[0] + ' requires one argument, i.e. name of dVRK arm'
