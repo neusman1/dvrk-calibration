@@ -46,7 +46,7 @@ class calibration_testing:
 
         self._robot.move_joint_list([0.0,0.0,0.1,0.0,0.0,0.0,0.0],[0,1,2,3,4,5,6])
         time.sleep(1)
-        axis_under_testing = raw_input("please type '/s'/ for shaft, '/w'/ for wrist, or '/f'/ for finger \n")
+        axis_under_testing = raw_input("please type 's' for shaft, 'w' for wrist, or 'f' for finger \n")
         print "Please set a refence point"
 
         while sample_nb < (density + 1):
@@ -99,7 +99,7 @@ class calibration_testing:
                             cartesian_totals.append(recorded_cartesian_positions[cartesian_sample][axis])
                         average_cartesian_positions.append(sum(cartesian_totals)/len(cartesian_totals))
                         cartesian_totals = []
-                    self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.005])              
+                    self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.0025])              
                     time.sleep(.2)
                 sample_nb += 1
                 if sample_nb < (density +1):
@@ -112,7 +112,7 @@ class calibration_testing:
             time.sleep(0.03) # 0.03 is 30 ms, which is the spacenav's highest output frequency
 
         # write all values to csv file
-        csv_file_name = 'single_axis_mouse_positions.csv'
+        csv_file_name = 'single_axis_mouse_positions_' + str(axis_under_testing) + '.csv'
         print "Values will be saved in: ", csv_file_name
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
