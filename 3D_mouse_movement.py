@@ -39,7 +39,7 @@ class calibration_testing:
         recorded_cartesian_positions = []
         sample_nb = 0
         acceleration_counter = 1.0
-        range_of_motion = [ [-40 * d2r, 40 * d2r], [-40 * d2r, 40 * d2r], [-40 * d2r, 40 * d2r]]
+        range_of_motion = [ [-60 * d2r, 60 * d2r], [-60 * d2r, 60 * d2r], [-60 * d2r, 60 * d2r]]
         density = 3
         joint_motions = [ 0, 0, 0]
         joint_indexs = [ 0, 0, 0]
@@ -94,12 +94,13 @@ class calibration_testing:
                     print "you are on sample: ", sample_nb, " / ", density**3
                 elif sample_nb == ((density**3)+1):
                     print "finished"
-           
+                    self._robot.delta_move_cartesian_translation([0.0,0.0,0.05])
+
             self.previous_mouse_buttons[:] = self.mouse_buttons()
             time.sleep(0.03) # 0.03 is 30 ms, which is the spacenav's highest output frequency
 
         # write all values to csv file
-        csv_file_name = 'mouse_positions.csv'
+        csv_file_name = 'all_axis_mouse_positions.csv'
         print "Values will be saved in: ", csv_file_name
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
