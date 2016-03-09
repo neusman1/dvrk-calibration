@@ -87,7 +87,7 @@ class calibration_testing:
                             cartesian_totals.append(recorded_cartesian_positions[cartesian_sample][axis])
                         average_cartesian_positions.append(sum(cartesian_totals)/len(cartesian_totals))
                         cartesian_totals = []
-                    self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.005])              
+                    self._robot.move_cartesian_translation([average_cartesian_positions[0], average_cartesian_positions[1], average_cartesian_positions[2] + 0.0025])              
                     time.sleep(.2)
                 sample_nb += 1
                 if sample_nb < ((density**3)+1):
@@ -100,7 +100,7 @@ class calibration_testing:
             time.sleep(0.03) # 0.03 is 30 ms, which is the spacenav's highest output frequency
 
         # write all values to csv file
-        csv_file_name = 'mouse_positions.csv'
+        csv_file_name = 'all_axis_mouse_positions.csv'
         print "Values will be saved in: ", csv_file_name
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
