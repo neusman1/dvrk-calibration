@@ -1,6 +1,7 @@
 #created April 5th, 2016
 #To Do:
-# -save average distances with the values used
+# -tiered scales
+# -redo csv/progress bar
 # -
 
 import sys
@@ -9,7 +10,7 @@ from numpy import array
 from cisstRobotPython import *
 import math
 
-def average_distance_computation(joint_increment_number_array):
+def average_distance_computation(joint_increment_number_array, sample_range, offsets_list):
     #set up robot
     r = robManipulator()
     r.LoadRobot('/home/neusman1/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/dvpsm.rob')
@@ -29,14 +30,14 @@ def average_distance_computation(joint_increment_number_array):
     k5offset = k5.PositionOffset()
     
     #convert increment
-    increment_of_change_array = [float(x) * (0.0001) for x in joint_increment_number_array] 
+    increment_of_change_array = [round(float(x) * (sample_range), 5) for x in joint_increment_number_array] 
 
     #modify offsets
-    k2.SetPositionOffset( k2offset + increment_of_change_array[0])
-    k3.SetPositionOffset( k3offset + increment_of_change_array[1])
-    k4.SetPositionOffset( k4offset + increment_of_change_array[2])
-    k5.SetPositionOffset( k5offset + increment_of_change_array[3])
-    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0116 + increment_of_change_array[4]], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    k2.SetPositionOffset( k2offset + increment_of_change_array[0] + offsets_list[0])
+    k3.SetPositionOffset( k3offset + increment_of_change_array[1] + offsets_list[1])
+    k4.SetPositionOffset( k4offset + increment_of_change_array[2] + offsets_list[2])
+    k5.SetPositionOffset( k5offset + increment_of_change_array[3] + offsets_list[3])
+    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0116 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
 
     #set up tooltip offset
     tt = robManipulator()
@@ -84,33 +85,93 @@ def average_distance_computation(joint_increment_number_array):
         all_distances_to_average.append(distance)
     average_distance = math.fsum(all_distances_to_average)/len(all_distances_to_average)
     
-    #print 'dist:           ', average_distance
-    #print 'default offset: ', k2offset
-    #print 'input array:    ', joint_increment_number_array
-    #print 'change:         ', increment_of_change_array
-    #print 'new offset:     ', k2offset + increment_of_change_array[0]
-    print average_distance
-
-    return_array = [average_distance, increment_of_change_array[0], increment_of_change_array[1], increment_of_change_array[2], increment_of_change_array[3], increment_of_change_array[4]]
+    #return distance and used offsets
+    return_array = [average_distance, 
+                    round(increment_of_change_array[0] + offsets_list[0], 5), 
+                    round(increment_of_change_array[1] + offsets_list[1], 5), 
+                    round(increment_of_change_array[2] + offsets_list[2], 5), 
+                    round(increment_of_change_array[3] + offsets_list[3], 5), 
+                    round(increment_of_change_array[4] + offsets_list[4], 5)]
     return return_array
 
 
-def run():
+def optimal_offsets(offsets_list, sample_range):
     offset_ideals = []
     ideal_error = 100000
-    for joint2 in range(-1000,1000):
-        for joint3 in range(-1000,1000):
-            for joint4 in range(-1000,1000):
-                for joint5 in range(-1000,1000):
-                    for joint6 in range(-1000,1000):
+    progress = 0.0
+
+    #write values to csv
+    #csv_file_name = 'DH_testing_output.csv'
+    #print "Values will be saved in: ", csv_file_name
+    #f = open(csv_file_name, 'wb')
+    #writer = csv.writer(f)
+    #writer.writerow(["average distance","additional offset"])
+    #check every single joint orinetation
+
+    #check 10 possible joint positions for each joint in given sample range
+    for joint2 in range(-5,6):
+        for joint3 in range(-5,6):
+            print ( progress / (21**5) *100)
+            for joint4 in range(-5,6):
+                for joint5 in range(-5,6):
+                    for joint6 in range(-5,6):
+
+                    #print ( progress / (19**2) *100)
+                        progress = progress + 1
                         input_array = [joint2,joint3,joint4,joint5,joint6]
-                        output = average_distance_computation(input_array)
+                        output = average_distance_computation(input_array, sample_range, offsets_list)
+            #write colected values to csv
+            #writer.writerow( output )
+            #check if gathered value is better then perivous, if so set as new ideal
+
+            #print output
                         if output[0] < ideal_error:
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
                             if ideal_error < 0.00312023255857:
-                                print "\n New Ideal Acheived! \n"
-                                
+                                print "\n \n \n \n \n New Ideal Acheived! \n"
+                                print "offset ideals: ", offset_ideals
+                                print "ideal error: ", ideal_error
+    return [offset_ideals, ideal_error]
 
-                        
+    #WORKING, KEEP COPY
+    """
+    for joint5 in range(-5,6):
+        for joint6 in range(-5,6):
+
+            #print ( progress / (19**2) *100)
+            progress = progress + 1
+            input_array = [0.0,0.0,0.0,joint5,joint6]
+            output = average_distance_computation(input_array, sample_range, offsets_list)
+            #write colected values to csv
+            #writer.writerow( output )
+            #check if gathered value is better then perivous, if so set as new ideal
+
+            #print output
+            if output[0] < ideal_error:
+                ideal_error = output[0]
+                offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
+                if ideal_error < 0.00312023255857:
+                    #print "\n \n \n \n \n New Ideal Acheived! \n"
+                    print "offset ideals: ", offset_ideals
+                    #print "ideal error: ", ideal_error
+    return [offset_ideals, ideal_error]
+    """
+
+
+def run():
+    optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
+    for sample_range_size in range(4):
+        sample_range = (1.0/10.0)**(sample_range_size +1)
+        print "\n sample range: ",sample_range
+        print "optimal offset list: ", optimal_offset_list
+        offset_output = optimal_offsets(optimal_offset_list,sample_range)
+        print "offset output: ", offset_output
+        optimal_offset_list = offset_output[0]
+        ideal_error = offset_output[1]
+    print "ideal error: ", ideal_error
+    print "optimal offsets: ", optimal_offset_list
+    #record results
+    #writer.writerow(ideal_error)
+    #writer.writerow(optimal_offset_list)
 run()
