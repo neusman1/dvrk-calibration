@@ -109,11 +109,8 @@ def optimal_offsets(offsets_list, sample_range):
     #check 10 possible joint positions for each joint in given sample range
     for joint2 in range(-5,6):
         for joint3 in range(-5,6):
-
             sys.stdout.write('\rProgress %02.3f%%' %( progress / (21**5) *100))
             sys.stdout.flush()
-            
-            #print ( progress / (21**5) *100)
             for joint4 in range(-5,6):
                 for joint5 in range(-5,6):
                     for joint6 in range(-5,6):
