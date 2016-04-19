@@ -2,7 +2,7 @@
 #To Do:
 # -tiered scales
 # -redo csv/progress bar
-# -
+# -test aformentioned additions
 
 import sys
 import csv
@@ -101,38 +101,35 @@ def optimal_offsets(offsets_list, sample_range):
     progress = 0.0
 
     #write values to csv
-    #csv_file_name = 'DH_testing_output.csv'
-    #print "Values will be saved in: ", csv_file_name
-    #f = open(csv_file_name, 'wb')
-    #writer = csv.writer(f)
-    #writer.writerow(["average distance","additional offset"])
-    #check every single joint orinetation
+    csv_file_name = 'DH_testing_output.csv'
+    print "Values will be saved in: ", csv_file_name
+    f = open(csv_file_name, 'wb')
+    writer = csv.writer(f)
 
     #check 10 possible joint positions for each joint in given sample range
     for joint2 in range(-5,6):
         for joint3 in range(-5,6):
-            print ( progress / (21**5) *100)
+
+            sys.stdout.write('\rProgress %02.3f%%' %( progress / (21**5) *100))
+            sys.stdout.flush()
+            
+            #print ( progress / (21**5) *100)
             for joint4 in range(-5,6):
                 for joint5 in range(-5,6):
                     for joint6 in range(-5,6):
-
-                    #print ( progress / (19**2) *100)
                         progress = progress + 1
                         input_array = [joint2,joint3,joint4,joint5,joint6]
                         output = average_distance_computation(input_array, sample_range, offsets_list)
-            #write colected values to csv
-            #writer.writerow( output )
-            #check if gathered value is better then perivous, if so set as new ideal
 
-            #print output
+                        #check if gathered value is better then perivous, if so set as new ideal
                         if output[0] < ideal_error:
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
                             if ideal_error < 0.00312023255857:
                                 print "\n \n \n \n \n New Ideal Acheived! \n"
-                                print "offset ideals: ", offset_ideals
-                                print "ideal error: ", ideal_error
+
     return [offset_ideals, ideal_error]
+
 
     #WORKING, KEEP COPY
     """
@@ -163,15 +160,18 @@ def run():
     optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
     for sample_range_size in range(4):
         sample_range = (1.0/10.0)**(sample_range_size +1)
-        print "\n sample range: ",sample_range
-        print "optimal offset list: ", optimal_offset_list
+        #print "\n sample range: ",sample_range
+        #print "optimal offset list: ", optimal_offset_list
         offset_output = optimal_offsets(optimal_offset_list,sample_range)
-        print "offset output: ", offset_output
+        #print "offset output: ", offset_output
         optimal_offset_list = offset_output[0]
         ideal_error = offset_output[1]
     print "ideal error: ", ideal_error
     print "optimal offsets: ", optimal_offset_list
+
     #record results
-    #writer.writerow(ideal_error)
-    #writer.writerow(optimal_offset_list)
+    writer.writerow(["ideal error"])
+    writer.writerow(ideal_error)
+    writer.writerow(["optimal offsets"])
+    writer.writerow(optimal_offset_list)
 run()
