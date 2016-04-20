@@ -157,6 +157,7 @@ def run():
     f = open(csv_file_name, 'wb')
     writer = csv.writer(f)
 
+    #begin testing (each itteration of loop is another degree of precision)
     optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
     for sample_range_size in range(4):
         sample_range = (1.0/10.0)**(sample_range_size +1)
@@ -166,14 +167,14 @@ def run():
         #print "offset output: ", offset_output
         optimal_offset_list = offset_output[0]
         ideal_error = offset_output[1]
-        print "scale size ", sample_range_size, "done testing"
+        print " \n scale size ", (1.0/10.0)**(sample_range_size +1), "done testing"
     print "\n"
     print "ideal error: ", ideal_error
     print "optimal offsets: ", optimal_offset_list
                                 
     #record results
     writer.writerow(["ideal error"])
-    writer.writerow([ideal_error])
+    writer.writerow([ideal_error, " "])
     writer.writerow(["optimal offsets"])
     writer.writerow(optimal_offset_list)
 
