@@ -4,7 +4,7 @@
 # Continue data collection w/ higher accuracy taken
 
 import sys
-from dvrk.arm import * 
+from dvrk.psm import * 
 from sensor_msgs.msg import Joy
 import rospy
 import time
@@ -77,7 +77,7 @@ class calibration_testing:
                     #move to next joint position
                     self._robot.delta_move_cartesian_translation([0.0,0.0,0.05])
                     time.sleep(.2)
-                    self._robot.move_joint_list([joint_motions[0], joint_motions[1], joint_motions[2], 0.0],[3,4,5,6])
+                    self._robot.move_joint_list([joint_motions[0], joint_motions[1], joint_motions[2], -10.0 * math.pi / 180.0],[3,4,5,6])
                     time.sleep(.2)
                     #move close to next cartesian position
                     cartesian_totals = []
