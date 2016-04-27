@@ -100,16 +100,10 @@ def optimal_offsets(offsets_list, sample_range):
     ideal_error = 100000
     progress = 0.0
 
-    #write values to csv
-    csv_file_name = 'DH_testing_output.csv'
-    print "Values will be saved in: ", csv_file_name
-    f = open(csv_file_name, 'wb')
-    writer = csv.writer(f)
-
     #check 10 possible joint positions for each joint in given sample range
     for joint2 in range(-5,6):
         for joint3 in range(-5,6):
-            sys.stdout.write('\rProgress %02.3f%%' %( progress / (21**5) *100))
+            sys.stdout.write('\rProgress %02.3f%%' %( progress / (11**5) *100))
             sys.stdout.flush()
             for joint4 in range(-5,6):
                 for joint5 in range(-5,6):
@@ -122,9 +116,11 @@ def optimal_offsets(offsets_list, sample_range):
                         if output[0] < ideal_error:
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
+                            """
                             if ideal_error < 0.00312023255857:
-                                print "\n \n \n \n \n New Ideal Acheived! \n"
-
+                                print "New Ideal Acheived!"
+                                print "ideal error: ", ideal_error
+                            """
     return [offset_ideals, ideal_error]
 
 
@@ -154,6 +150,14 @@ def optimal_offsets(offsets_list, sample_range):
 
 
 def run():
+
+    #write values to csv
+    csv_file_name = 'DH_testing_output.csv'
+    print "Values will be saved in: ", csv_file_name
+    f = open(csv_file_name, 'wb')
+    writer = csv.writer(f)
+
+    #begin testing (each itteration of loop is another degree of precision)
     optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
     for sample_range_size in range(4):
         sample_range = (1.0/10.0)**(sample_range_size +1)
@@ -163,12 +167,15 @@ def run():
         #print "offset output: ", offset_output
         optimal_offset_list = offset_output[0]
         ideal_error = offset_output[1]
+        print " \n scale size ", (1.0/10.0)**(sample_range_size +1), "done testing"
+    print "\n"
     print "ideal error: ", ideal_error
     print "optimal offsets: ", optimal_offset_list
-
+                                
     #record results
     writer.writerow(["ideal error"])
-    writer.writerow(ideal_error)
+    writer.writerow([ideal_error, " "])
     writer.writerow(["optimal offsets"])
     writer.writerow(optimal_offset_list)
+
 run()
