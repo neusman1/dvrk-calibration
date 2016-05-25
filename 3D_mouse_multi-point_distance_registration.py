@@ -1,7 +1,7 @@
 #created on May 17th 2016
 
 #to do:
-# fix csv format
+# fix csv format (double quotes around lines when printing)
 
 import sys
 from dvrk.psm import * 
@@ -96,5 +96,5 @@ if (len(sys.argv) != 2):
 else:
     robotName = sys.argv[1]
     app = calibration_testing(robotName)
-    app.run()
+    app.run() 
 
