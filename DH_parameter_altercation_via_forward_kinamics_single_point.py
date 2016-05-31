@@ -155,7 +155,7 @@ def optimal_offsets(offsets_list, sample_range):
 def run():
 
     #write values to csv
-    csv_file_name = 'DH_testing_output.csv'
+    csv_file_name = 'DH_single_point_testing_output.csv'
     print "Values will be saved in: ", csv_file_name
     f = open(csv_file_name, 'wb')
     writer = csv.writer(f)
