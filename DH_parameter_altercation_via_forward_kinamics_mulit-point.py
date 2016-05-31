@@ -7,6 +7,8 @@ import csv
 from numpy import array
 from cisstRobotPython import *
 import math
+from cisstNumericalPython import *
+import numpy
 
 def average_distance_computation(joint_increment_number_array, sample_range, offsets_list):
     #set up robot
@@ -42,51 +44,27 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     tt.Rtw0 = tooltip
     r.Attach(tt)
 
-    all_joint_data_array = []
-    all_forward_kinematics_array = []
-    all_cartesian_positions_array = []
-    cartesian_axis_total_groupings = [ [],[],[] ]
-    all_distances_to_average = []
+    #import real value data
+    reader=csv.reader(open("distance_registration_real_values.csv","rb"),delimiter=',')
+    full_data_list_actual=list(reader)
+    del full_data_list_actual[0]
+    for item in full_data_list_actual:
+        del item[0]
+    all_coordinates_actual=numpy.array(full_data_list_actual).astype('float')
+            
+    #import test value data
+    reader=csv.reader(open("distance_registration_mouse_positions1.csv","rb"),delimiter=',')
+    full_data_list_under_testing=list(reader)
+    del full_data_list_under_testing[0]
+    for item in full_data_list_under_testing:
+        del item[0]
+    all_coordinates_under_testing=numpy.array(full_data_list_under_testing).astype('float')
     
-    #old code, needs new function for differnet data type
-    """
-    #import data
-    with open('MouseData/joint_positions_for_testing.csv', 'rb') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            all_joint_data_array.append(row)
+    #calculate fre
+    fre = cisstNumericalPython.nmrRegistrationRigid(all_coordinates_actual, all_coordinates_under_testing)[1]
 
-    #change data from str to float
-    for arrayElement in all_joint_data_array:
-        for jointElement in range(len(arrayElement)):
-            arrayElement[jointElement] = float(arrayElement[jointElement])
-
-    #calculate forward kinematics for each joint set
-    for arrayElement in all_joint_data_array:
-        FK = r.ForwardKinematics(array(arrayElement))
-        all_forward_kinematics_array.append(FK)
-
-    #create list of only cartesian positions
-    for arrayElement in all_forward_kinematics_array:
-        xyz = []
-        for axis in range(3):
-            xyz.append(arrayElement[axis][3])
-        all_cartesian_positions_array.append(xyz)
-
-    #calculate averavge position
-    for axis in range(3):
-        for arrayElement in all_cartesian_positions_array:
-            cartesian_axis_total_groupings[axis].append(arrayElement[axis])
-    average_cartesian_position = [ (math.fsum(cartesian_axis_total_groupings[0])/len(cartesian_axis_total_groupings[0])), (math.fsum(cartesian_axis_total_groupings[1])/len(cartesian_axis_total_groupings[1])), (math.fsum(cartesian_axis_total_groupings[2])/len(cartesian_axis_total_groupings[2])) ]
-
-    #calculate average distace of each joint frame to average cartesian point
-    for arrayElement in all_cartesian_positions_array:
-        distance = math.sqrt( ((arrayElement[0] - average_cartesian_position[0])**2) + ((arrayElement[1] - average_cartesian_position[1])**2) + ((arrayElement[2] - average_cartesian_position[2])**2) )
-        all_distances_to_average.append(distance)
-    average_distance = math.fsum(all_distances_to_average)/len(all_distances_to_average)
-    """
-    #return distance and used offsets
-    return_array = [average_distance, 
+    #return fre and used offsets
+    return_array = [fre, 
                     round(increment_of_change_array[0] + offsets_list[0], 5), 
                     round(increment_of_change_array[1] + offsets_list[1], 5), 
                     round(increment_of_change_array[2] + offsets_list[2], 5), 
@@ -157,7 +135,7 @@ def optimal_offsets(offsets_list, sample_range):
 def run():
 
     #write values to csv
-    csv_file_name = 'DH_testing_output.csv'
+    csv_file_name = 'DH_multi-point_testing_output.csv'
     print "Values will be saved in: ", csv_file_name
     f = open(csv_file_name, 'wb')
     writer = csv.writer(f)
