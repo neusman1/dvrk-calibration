@@ -88,7 +88,7 @@ class calibration_testing:
         writer = csv.writer(f)
         writer.writerow(["#Collected cartesian positions",""])
         for coordinates in range(len(recorded_cartesian_positions)):
-            writer.writerow(["Corrdinate(" + str((coordinates %5)*50)  + "," + str(int(math.floor(coordinates/5))*50) + ") " + str(recorded_cartesian_positions[coordinates][0]) + " " + str(recorded_cartesian_positions[coordinates][1]) + " " + str(recorded_cartesian_positions[coordinates][2]), " "])
+            writer.writerow(["Corrdinate(" + str((coordinates %5)*50)  + " " + str(int(math.floor(coordinates/5))*50) + ")", + str(recorded_cartesian_positions[coordinates][0]) , str(recorded_cartesian_positions[coordinates][1]) , str(recorded_cartesian_positions[coordinates][2])])
         
 
 if (len(sys.argv) != 2):
