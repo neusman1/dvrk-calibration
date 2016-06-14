@@ -1,6 +1,6 @@
 #created April 5th, 2016
 # To Do:
-# -
+# -figure out why code returns completely new offests each time
 
 import sys
 import csv
@@ -10,10 +10,12 @@ import math
 from cisstNumericalPython import *
 import numpy
 
+
+dvpsm_file_location = '/home/neusman1/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/dvpsm-copy-for-testing.rob'
 def average_distance_computation(joint_increment_number_array, sample_range, offsets_list):
     #set up robot
     r = robManipulator()
-    r.LoadRobot('/home/neusman1/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/dvpsm-copy-for-testing.rob')
+    r.LoadRobot(dvpsm_file_location)
     
     #set up kinematic offset vairables
     l2 = r.links[2]
@@ -44,24 +46,52 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     tt.Rtw0 = tooltip
     r.Attach(tt)
 
+    all_joint_data_array = []
+    all_forward_kinematics_array = []
+    all_cartesian_positions_array = []
+    all_named_coordinates_under_testing = []
+
     #import real value data
     reader=csv.reader(open("distance_registration_real_values.csv","rb"),delimiter=',')
     full_data_list_actual=list(reader)
     del full_data_list_actual[0]
     for item in full_data_list_actual:
         del item[0]
-    all_coordinates_actual=numpy.array(full_data_list_actual).astype('float')
-            
+    all_coordinates_actual=numpy.array(full_data_list_actual).astype(float)
+
     #import test value data
-    reader=csv.reader(open("distance_registration_mouse_positions1.csv","rb"),delimiter=',')
-    full_data_list_under_testing=list(reader)
-    del full_data_list_under_testing[0]
-    for item in full_data_list_under_testing:
-        del item[0]
-    all_coordinates_under_testing=numpy.array(full_data_list_under_testing).astype('float')
+    with open('distance_registration_mouse_positions1.csv', 'rb') as f_test:
+        reader = csv.reader(f_test)
+        for row in reader:
+            all_joint_data_array.append(row)
+
+    #change data from str to float
+    for arrayElement in all_joint_data_array:
+        for jointElement in range(len(arrayElement)):
+            arrayElement[jointElement] = float(arrayElement[jointElement])
+
+    #calculate forward kinematics for each joint set
+    for arrayElement in all_joint_data_array:
+        FK = r.ForwardKinematics(numpy.array(arrayElement))
+        all_forward_kinematics_array.append(FK)
+
+    #create list of only cartesian positions
+    for arrayElement in all_forward_kinematics_array:
+        xyz = []
+        for axis in range(3):
+            xyz.append(arrayElement[axis][3])
+        all_cartesian_positions_array.append(xyz)
+    nb_of_positions = len(all_cartesian_positions_array)
+    #create numpy array for use in nmrRegistrationRigid
+    coordinates_being_tested = numpy.zeros(shape=(nb_of_positions,3))
     
+    for coordinate in range(len(all_cartesian_positions_array)):
+         coordinates_being_tested[coordinate] = [all_cartesian_positions_array[coordinate][0], all_cartesian_positions_array[coordinate][1], all_cartesian_positions_array[coordinate][2]]
+    all_coordinates_under_testing = coordinates_being_tested.astype(float)
+
+
     #calculate fre
-    fre = cisstNumericalPython.nmrRegistrationRigid(all_coordinates_actual, all_coordinates_under_testing)[1]
+    fre = nmrRegistrationRigid(all_coordinates_actual, all_coordinates_under_testing)[1]
 
     #return fre and used offsets
     return_array = [fre, 
@@ -102,36 +132,6 @@ def optimal_offsets(offsets_list, sample_range):
     
 
 
-    """
-    for joint3 in range(-5,6):
-        for joint4 in range(-5,6):
-            sys.stdout.write('\rProgress %02.3f%%' %( progress / (11**2) *100))
-            sys.stdout.flush()
-            progress = progress + 1
-            input_array = [0.0,joint3,joint4,0.0,0.0]
-            #input_array = [joint2,joint3,0.0,0.0,0.0]
-            #input_array = [0.0,0.0,0.0,joint5,joint6]
-            output = average_distance_computation(input_array, sample_range, offsets_list)
-            #write colected values to csv
-            #writer.writerow( output )
-            #check if gathered value is better then perivous, if so set as new ideal
-
-            #print output
-            if output[0] < ideal_error:
-                ideal_error = output[0]
-                offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
-                     
-                
-                if ideal_error < 0.00312023255857:
-                    #print "\n \n \n \n \n New Ideal Acheived! \n"
-                    print "offset ideals: ", offset_ideals
-                    #print "ideal error: ", ideal_error
-                
-  
-    return [offset_ideals, ideal_error]
-
-    """
-
 def run():
 
     #write values to csv
@@ -144,16 +144,14 @@ def run():
     optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
     for sample_range_size in range(4):
         sample_range = (1.0/10.0)**(sample_range_size +1)
-        #print "\n sample range: ",sample_range
-        #print "optimal offset list: ", optimal_offset_list
         offset_output = optimal_offsets(optimal_offset_list,sample_range)
-        #print "offset output: ", offset_output
         optimal_offset_list = offset_output[0]
         ideal_error = offset_output[1]
         print " \n scale size ", (1.0/10.0)**(sample_range_size +1), "done testing"
     print "\n"
     print "ideal error: ", ideal_error
     print "optimal offsets: ", optimal_offset_list
+    print "dvpsm file location: ", dvpsm_file_location
                                 
     #record results
     writer.writerow(["ideal error"])
