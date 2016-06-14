@@ -39,7 +39,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     k3.SetPositionOffset( k3offset + increment_of_change_array[1] + offsets_list[1])
     k4.SetPositionOffset( k4offset + increment_of_change_array[2] + offsets_list[2])
     k5.SetPositionOffset( k5offset + increment_of_change_array[3] + offsets_list[3])
-    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0100 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.1490 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
 
     #set up tooltip offset
     tt = robManipulator()
@@ -105,14 +105,21 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
 
 def optimal_offsets(offsets_list, sample_range):
     offset_ideals = []
-    ideal_error = 100000
-    progress = 0.0
-    
+    ideal_error = 100000 #set to unobtainably-large number so that a new ideal will always be accepted
+    if sample_range == (1.0/10.0)**1:
+        progress = 0.0
+    elif  sample_range == (1.0/10.0)**2:
+        progress = float((11**5))
+    elif  sample_range == (1.0/10.0)**3:
+        progress = float((2.0 * (11**5)))
+    elif  sample_range == (1.0/10.0)**4:
+        progress = float((3.0 * (11**5)))
     
     #check 10 possible joint positions for each joint in given sample range
     for joint2 in range(-5,6):
         for joint3 in range(-5,6):
-            sys.stdout.write('\rProgress %02.3f%%' %( progress / (11**5) *100))
+            global progress
+            sys.stdout.write('\rProgress %02.3f%%' %( progress / (11**5) *25))
             sys.stdout.flush()
             for joint4 in range(-5,6):
                 for joint5 in range(-5,6):
@@ -126,7 +133,14 @@ def optimal_offsets(offsets_list, sample_range):
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
 
-    sys.stdout.write('\rProgress %03.3f%%' %(100))
+    if sample_range == (1.0/10.0)**1:
+        sys.stdout.write('\rProgress %03.3f%%' %(25.0))
+    elif  sample_range == (1.0/10.0)**2:
+        sys.stdout.write('\rProgress %03.3f%%' %(50.0))
+    elif  sample_range == (1.0/10.0)**3:
+        sys.stdout.write('\rProgress %03.3f%%' %(75.0))
+    elif  sample_range == (1.0/10.0)**4:
+        sys.stdout.write('\rProgress %03.3f%%' %(100.0))
 
     return [offset_ideals, ideal_error]
     
