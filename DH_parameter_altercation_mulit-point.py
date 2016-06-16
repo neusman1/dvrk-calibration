@@ -39,7 +39,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     k3.SetPositionOffset( k3offset + increment_of_change_array[1] + offsets_list[1])
     k4.SetPositionOffset( k4offset + increment_of_change_array[2] + offsets_list[2])
     k5.SetPositionOffset( k5offset + increment_of_change_array[3] + offsets_list[3])
-    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.1490 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.1825 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
 
     #set up tooltip offset
     tt = robManipulator()
@@ -60,7 +60,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     all_coordinates_actual=numpy.array(full_data_list_actual).astype(float)
 
     #import test value data
-    with open('distance_registration_mouse_positions1.csv', 'rb') as f_test:
+    with open('distance_registration_mouse_positions2.csv', 'rb') as f_test:
         reader = csv.reader(f_test)
         for row in reader:
             all_joint_data_array.append(row)
@@ -106,6 +106,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
 def optimal_offsets(offsets_list, sample_range):
     offset_ideals = []
     ideal_error = 100000 #set to unobtainably-large number so that a new ideal will always be accepted
+    #set the percent dependent on the scale size
     if sample_range == (1.0/10.0)**1:
         progress = 0.0
     elif  sample_range == (1.0/10.0)**2:
@@ -132,7 +133,18 @@ def optimal_offsets(offsets_list, sample_range):
                         if output[0] < ideal_error:
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
+                        #if two ideals are found with the same fre, use the one with less overall offset change
+                        elif output[0] == ideal_error:
+                            old_change = 0
+                            new_change = 0
+                            for joint in range(1,6):
+                                old_change = old_change + abs(offset_ideals[joint])
+                                new_change = new_change + abs(output[joint])
+                            if old_change < new_change:
+                                ideal_error = output[0]
+                                offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
 
+    #display final percent
     if sample_range == (1.0/10.0)**1:
         sys.stdout.write('\rProgress %03.3f%%' %(25.0))
     elif  sample_range == (1.0/10.0)**2:
