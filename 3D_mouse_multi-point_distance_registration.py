@@ -73,7 +73,7 @@ class calibration_testing:
                     self._robot.dmove(PyKDL.Vector(0.0,0.0,0.005))
                     self._robot.dmove(PyKDL.Vector(0.05,0.0,0.0))
                 if sample_nb %5 == 0 and sample_nb != 20:
-                    self._robot.dmove(PyKDL.Vector(0.0,0.0,0.005))
+                    self._robot.dmove(PyKDL.Vector(0.0,0.0,0.008))
                     self._robot.dmove(PyKDL.Vector(0.0,0.05,0.0))
                     self._robot.dmove(PyKDL.Vector(-0.05,0.0,0.0))
                     self._robot.dmove(PyKDL.Vector(-0.05,0.0,0.0))
