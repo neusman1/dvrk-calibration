@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
 #Created on July 15, 2016
+#Author: Nick Eusman
 
+#To do:
+# -better writing to console (don't use print)
+# -
+# -
 
 
 import time
@@ -46,30 +51,22 @@ class atracsys_calibration:
         number_of_points = 7
         #atracsys_position = [self._points[0].x, self._points[0].y, self._points[0].z ]
         while not rospy.is_shutdown():
-            #display mouse,atracsys, and dvrk positions
-            
+
+           #display mouse,atracsys, and dvrk positions
             print 'Mouse axes: '
             for axis in range(len(self._last_axes)):
                 print self._last_axes[axis]
             print '\n'
             print 'Atracsys fiducials: '
-
-
             for axis in range(len(self._points)):
                 print self._points[axis]
-                #print type(self._points[axis])
-                #print self._points[axis].x
-            
-
-            #print type(self._points[0])
-                
             print '\n'
             print 'dvrk tooltip position: '
             for axis in range(3):
-                print self._robot.get_current_position().p[axis]
+                print (self._robot.get_current_position().p[axis])*(10**3)
             print '\n'
-            
             time.sleep(.03)
+
             """
             sys.stdout.write('Mouse axes: ')
             for i in range(len(self._last_axes)):
@@ -92,8 +89,6 @@ class atracsys_calibration:
 
 
 
-
-
             #mouse movement
             if self._last_axes[0] != 0 or self._last_axes[1] != 0 or self._last_axes[2] != 0:
                 acceleration_counter += 0.03
@@ -113,17 +108,20 @@ class atracsys_calibration:
             if self._last_buttons[0] == 1 and self.previous_mouse_buttons[0] == 0 and not self._last_buttons[1] == 1 and self.previous_mouse_buttons[1] == 0:
                 time.sleep(.3)
                 recorded_dvrk_positions.append( [self._robot.get_current_position().p[0],self._robot.get_current_position().p[1],self._robot.get_current_position().p[2]] )
-                recorded_atracsys_positions.append( [self._points[0].x, self._points[0].y, self._points[0].z ]  )
-                print "position recorded"                
+                recorded_atracsys_positions.append( [(self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ]  )
+                print 'position recorded'                
                 time.sleep(.3)
 
             #enable quicker speed if pressing 2nd mouse button
             if self._last_buttons[1] == 1 and self.previous_mouse_buttons[1] == 0 and not self._last_buttons[0] == 1 and self.previous_mouse_buttons[0] == 0:
                 fast_mode = not fast_mode
-            
+
+            """
             #print recorded data when pressing both mouse buttons
             if self._last_buttons[1] == 1 and self.previous_mouse_buttons[1] == 0 and self._last_buttons[0] == 1 and self.previous_mouse_buttons[0] == 0:
                 print recorded_atracsys_positions, recorded_dvrk_positions
+                time.sleep(1)
+            """
 
             #record previous mouse button values
             self.previous_mouse_buttons[:] = self._last_buttons
@@ -140,12 +138,13 @@ class atracsys_calibration:
                 for coordinate in range(len(recorded_atracsys_positions)):
                     atracsys_coordinates[coordinate] = [recorded_atracsys_positions[coordinate][0], recorded_atracsys_positions[coordinate][1], recorded_atracsys_positions[coordinate][2]]
                 atracsys_coordinates_for_testing = atracsys_coordinates.astype(float)
-
+                #calculate and display transformation and FRE 
                 (transformation, FRE) = nmrRegistrationRigid(dvrk_coordinates_for_testing,atracsys_coordinates_for_testing)
                 print 'dvrk positions: \n', dvrk_coordinates_for_testing
                 print 'atracsys positions: \n', atracsys_coordinates_for_testing
                 print 'Transformation: \n', transformation
                 print 'FRE: \n', FRE
+                print '\n'
                 rospy.signal_shutdown('Finished Task')
 
 if __name__ == '__main__':
