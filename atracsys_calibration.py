@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#Created on July 15, 2016
+#Created on June 15, 2016
 #Author: Nick Eusman
 
 #To do:
