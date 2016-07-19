@@ -4,11 +4,10 @@
 #Author: Nick Eusman
 
 #To Do:
-# -csv file writing of values (needs testing)
-# -start other code to do nmr registartion? (or maybe use same code?)
-# -run all the way through to test up/down mechanic (up down works, still need to run though)
-# -check if getting atracsys values at all points (ties into next)
-# -check if list of atracsys points is of size 0, then skip point (should be working, needs additional testing)
+# -Possibly implement DH changing algorithm
+# -See if Peter has other DH algorithm working, if so try to implement (possibly change csv format to fit)
+# -Figure out why Atracsys sees 3 points at certain positions
+
 
 import sys
 from dvrk.psm import * 
@@ -18,6 +17,8 @@ import csv
 import math
 import numpy
 from sensor_msgs.msg import PointCloud
+from cisstRobotPython import *
+from cisstNumericalPython import *
 
 class calibration_testing:
     
@@ -108,7 +109,7 @@ class calibration_testing:
             self._robot.move_joint(numpy.array([0.0,0.0,0.1,0.0,0.0,0.0,-0.20]))
             #write values to csv file
             csv_file_name = 'Atracsys_joint_motion_output.csv'
-            print "Values will be saved in: ", csv_file_name
+            print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
             writer.writerow(["atracsys positions","","","dvrk cartesian positions", "", "", "dvrk joint positions"])
@@ -128,8 +129,8 @@ class calibration_testing:
             atracsys_coordinates_for_testing = atracsys_coordinates.astype(float)
             #calculate and display transformation and FRE 
             (transformation, FRE) = nmrRegistrationRigid(dvrk_coordinates_for_testing,atracsys_coordinates_for_testing)
-            print 'dvrk positions: \n', dvrk_coordinates_for_testing
-            print 'atracsys positions: \n', atracsys_coordinates_for_testing
+            #print 'dvrk positions: \n', dvrk_coordinates_for_testing
+            #print 'atracsys positions: \n', atracsys_coordinates_for_testing
             print 'Transformation: \n', transformation
             print 'FRE: \n', FRE
 
