@@ -48,16 +48,16 @@ class calibration_testing:
             raw_input("The dvrk arm is about to make LARGE MOVEMENTS, please ensure there is ample space, then hit [enter]")
             print "The robot will now move to its joint maxima and minima to ensure the atracsys has full vision"
             time.sleep(2)
-            self._robot.move_joint(numpy.array([-70*d2r, -40*d2r, 0.055,0.0,0.0,0.0,-0.20]))
-            if len(self._points) == 0:
-                print "The Atracsys cannot see the minima joint position, please adjust the dvrk arm"
-                rospy.signal_shutdown('Atracsys cannot see minima')
-            time.sleep(1)
-            self._robot.move_joint(numpy.array([70*d2r, 40*d2r, 0.235,0.0,0.0,0.0,-0.20]))
-            if len(self._points) == 0:
-                print "The Atracsys cannot see the maxima joint position, please adjust the dvrk arm"
-                rospy.signal_shutdown('Atracsys cannot see maxima')
-            time.sleep(1)
+            
+            for joint0 in range(3):
+                for joint1 in range(3):
+                    self._robot.move_joint(numpy.array([-70*d2r + (70*joint0)*d2r, -40*d2r + (40*joint1)*d2r, 0.235,0.0,0.0,0.0,-0.20]))
+                    
+                    if len(self._points) == 0:
+                        print "The Atracsys cannot see this joint position, please adjust the dvrk arm"
+                        rospy.signal_shutdown('Atracsys cannot see joint position')
+                    time.sleep(1)
+            
             
             print "Begining test of each joint position"
             global progress
@@ -93,8 +93,8 @@ class calibration_testing:
 
                                     time.sleep(1)
                                     if len(self._points) == 1:
-                                        recorded_dvrk_joint_positions.append(self._robot.get_current_joint_position())
-                                        recorded_dvrk_cartesian_positions.append(self._robot.get_current_position().p)
+                                        recorded_dvrk_joint_positions.append([self._robot.get_current_joint_position()[0],self._robot.get_current_joint_position()[1],self._robot.get_current_joint_position()[2], self._robot.get_current_joint_position()[3], self._robot.get_current_joint_position()[4], self._robot.get_current_joint_position()[5], self._robot.get_current_joint_position()[6]])
+                                        recorded_dvrk_cartesian_positions.append([self._robot.get_current_position().p[0], self._robot.get_current_position().p[1], self._robot.get_current_position().p[2]])
                                         recorded_atracsys_positions.append( [(self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ]  )
                                     elif len(self._points) >= 2:
                                         print "\n More then one fiducial point found"
