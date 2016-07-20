@@ -59,10 +59,6 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
         del item[3:]
     all_coordinates_actual=numpy.array(full_data_list_actual).astype(float)
 
-    ######TESTING
-    print all_coordinates_actual
-    raw_input("Above should be the atracsys points, hit [enter] to continue")
-
     #import test value data
     with open('Atracsys_joint_motion_output.csv', 'rb') as f_test:
         reader = csv.reader(f_test)
@@ -71,10 +67,6 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     del all_joint_data_array[0]
     for item in all_joint_data_array:
         del item[:-7]
-
-    ######TESTING
-    print all_joint_data_array
-    raw_input("Above should be the joint positions, hit [enter] to continue")
 
     #change data from str to float
     for arrayElement in all_joint_data_array:
@@ -99,10 +91,6 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     for coordinate in range(len(all_cartesian_positions_array)):
          coordinates_being_tested[coordinate] = [all_cartesian_positions_array[coordinate][0], all_cartesian_positions_array[coordinate][1], all_cartesian_positions_array[coordinate][2]]
     all_coordinates_under_testing = coordinates_being_tested.astype(float)
-
-    ######TESTING
-    print all_coordinates_under_testing
-    raw_input("Above should be the dvrk coordinates, hit [enter] to continue")
 
     #calculate fre
     fre = nmrRegistrationRigid(all_coordinates_actual, all_coordinates_under_testing)[1]
