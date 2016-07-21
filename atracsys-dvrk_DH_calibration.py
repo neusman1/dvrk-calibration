@@ -1,6 +1,6 @@
 #created July 19th, 2016
 # To Do:
-# -change existing code for new csv file
+# -
 
 import sys
 import csv
@@ -119,7 +119,7 @@ def optimal_offsets(offsets_list, sample_range):
     elif  sample_range == (1.0/10.0)**4:
         progress = float((3.0 * (11**5)))
     
-    #check 10 possible joint positions for each joint in given sample range
+    #check 11 possible DH offset changes(+-5) for each joint in given sample range
     for joint2 in range(-5,6):
         for joint3 in range(-5,6):
             sys.stdout.write('\rProgress %02.3f%%' %( progress / (11**5) *25))
