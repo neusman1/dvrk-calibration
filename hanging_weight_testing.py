@@ -15,6 +15,7 @@ import math
 import numpy
 import time
 from sensor_msgs.msg import PointCloud
+import pickle
 
 class calibration_testing:
 
@@ -28,6 +29,27 @@ class calibration_testing:
         self._points[:] = data.points
 
     def run(self):
+        dvrk_desired_position = []
+        dvrk_currnet_position = []
+        atracsys_position = []
+        
+        #import transformation matirx
+        rotation = pickle.load(file('atracsys2dvrk_rotation'))
+        translation = pickle.load(file('atracsys2dvrk_translation'))
+
+        #sample use: 
+        # a.Rotation().dot(b)+a.Translation()
+        #wherein a is transformation and b is the point
+        # OR
+        # r.dot(b)+t
+        #wherein r is the rotation, t is the translation, and b is the point
+
+        while not rospy.is_shutdown():
+            self._robot.move_joint(numpy.array([0.0,0.0,0.235,0.0,0.0,0.0,-0.20]))
+            for sample_nb in range(20):
+                atracsys_position.append( [(self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ]  )
+
+        """
         recorded_atracsys_position = [ [], [] ]
         recorded_current_joint_position = [ [], [] ]
         recorded_current_joint_effort = [ [], [] ]
@@ -46,7 +68,7 @@ class calibration_testing:
 
         while not rospy.is_shutdown():
             self._robot.move_joint(numpy.array([0.0,0.0,0.235,0.0,0.0,0.0,-0.20]))
-
+            
             #record unweighted data
             raw_input("Hit [enter] when robot is unweighted")
             for i in range(20):
@@ -90,6 +112,8 @@ class calibration_testing:
             print 'dvrk X change: ', recorded_dvrk_position_averages[1][0] - recorded_dvrk_position_averages[0][0]
             print 'difference in atracsys and dvrk change: ', (recorded_atracsys_position_averages[1][1] - recorded_atracsys_position_averages[0][1]) - (recorded_dvrk_position_averages[1][0] - recorded_dvrk_position_averages[0][0])
 
+
+        """
             rospy.signal_shutdown('Finished Task')
 
 if (len(sys.argv) != 2):
