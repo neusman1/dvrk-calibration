@@ -10,90 +10,99 @@ import math
 from cisstNumericalPython import *
 import numpy
 
-
 dvpsm_file_location = '/home/neusman1/catkin_ws/src/cisst-saw/sawIntuitiveResearchKit/share/dvpsm-copy-for-testing.rob'
-def average_distance_computation(joint_increment_number_array, sample_range, offsets_list):
-    #set up robot
-    r = robManipulator()
-    r.LoadRobot(dvpsm_file_location)
-    
-    #set up kinematic offset vairables
-    l2 = r.links[2]
-    k2 = l2.GetKinematics()
-    k2offset = k2.PositionOffset()
-    l3 = r.links[3]
-    k3 = l3.GetKinematics()
-    k3offset = k3.PositionOffset()
-    l4 = r.links[4]
-    k4 = l4.GetKinematics()
-    k4offset = k4.PositionOffset()
-    l5 = r.links[5]
-    k5 = l5.GetKinematics()
-    k5offset = k5.PositionOffset()
+
+class extended_manipulator:
+    def __init__(self, robFile):
+        self.r = robManipulator()
+        self.r.LoadRobot(robFile)
+        #set up kinematic offset vairables
+        self.l2 = self.r.links[2]
+        self.k2 = self.l2.GetKinematics()
+        self.k2offset = self.k2.PositionOffset()
+        self.l3 = self.r.links[3]
+        self.k3 = self.l3.GetKinematics()
+        self.k3offset = self.k3.PositionOffset()
+        self.l4 = self.r.links[4]
+        self.k4 = self.l4.GetKinematics()
+        self.k4offset = self.k4.PositionOffset()
+        self.l5 = self.r.links[5]
+        self.k5 = self.l5.GetKinematics()
+        self.k5offset = self.k5.PositionOffset()
+
+        #set up tooltip offset
+        self.tt = robManipulator()
+        self.r.Attach(self.tt)
+
+
+class data:
+    def __init__(self):
+        # import atracsys 3D coordinates data
+        reader = csv.reader(open("Atracsys_joint_motion_output.csv","rb"), delimiter=',')
+        full_data_list_actual = list(reader)
+        del full_data_list_actual[0]
+        for item in full_data_list_actual:
+            del item[3:]
+        # 3 by N matrix
+        self.all_coordinates_actual = numpy.array(full_data_list_actual).astype(float)
+
+        # import joint value data (6 by N matrix)
+        self.all_joint_data_array = []
+
+        with open('Atracsys_joint_motion_output.csv', 'rb') as f_test:
+            reader = csv.reader(f_test)
+            for row in reader:
+                self.all_joint_data_array.append(row)
+        del self.all_joint_data_array[0]
+        for item in self.all_joint_data_array:
+            del item[:-7]
+
+        # change data from str to float
+        for arrayElement in self.all_joint_data_array:
+            for jointElement in range(len(arrayElement)):
+                arrayElement[jointElement] = float(arrayElement[jointElement])
+
+
+def average_distance_computation(joint_increment_number_array, sample_range, offsets_list, manip_kin, input_data):
     
     #convert increment
     increment_of_change_array = [round(float(x) * (sample_range), 5) for x in joint_increment_number_array] 
 
-    #modify offsets
-    k2.SetPositionOffset( k2offset + increment_of_change_array[0] + offsets_list[0])
-    k3.SetPositionOffset( k3offset + increment_of_change_array[1] + offsets_list[1])
-    k4.SetPositionOffset( k4offset + increment_of_change_array[2] + offsets_list[2])
-    k5.SetPositionOffset( k5offset + increment_of_change_array[3] + offsets_list[3])
+    # modify offsets
+    manip_kin.k2.SetPositionOffset(manip_kin.k2offset + increment_of_change_array[0] + offsets_list[0])
+    manip_kin.k3.SetPositionOffset(manip_kin.k3offset + increment_of_change_array[1] + offsets_list[1])
+    manip_kin.k4.SetPositionOffset(manip_kin.k4offset + increment_of_change_array[2] + offsets_list[2])
+    manip_kin.k5.SetPositionOffset(manip_kin.k5offset + increment_of_change_array[3] + offsets_list[3])
+
+    # modify tool tip
     tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0102 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    manip_kin.tt.Rtw0 = tooltip
 
-    #set up tooltip offset
-    tt = robManipulator()
-    tt.Rtw0 = tooltip
-    r.Attach(tt)
-
-    all_joint_data_array = []
     all_forward_kinematics_array = []
     all_cartesian_positions_array = []
-    all_named_coordinates_under_testing = []
 
-    #import real value data
-    reader=csv.reader(open("Atracsys_joint_motion_output.csv","rb"),delimiter=',')
-    full_data_list_actual=list(reader)
-    del full_data_list_actual[0]
-    for item in full_data_list_actual:
-        del item[3:]
-    all_coordinates_actual=numpy.array(full_data_list_actual).astype(float)
-
-    #import test value data
-    with open('Atracsys_joint_motion_output.csv', 'rb') as f_test:
-        reader = csv.reader(f_test)
-        for row in reader:
-            all_joint_data_array.append(row)
-    del all_joint_data_array[0]
-    for item in all_joint_data_array:
-        del item[:-7]
-
-    #change data from str to float
-    for arrayElement in all_joint_data_array:
-        for jointElement in range(len(arrayElement)):
-            arrayElement[jointElement] = float(arrayElement[jointElement])
-
-    #calculate forward kinematics for each joint set
-    for arrayElement in all_joint_data_array:
-        FK = r.ForwardKinematics(numpy.array(arrayElement))
+    # calculate forward kinematics for each joint set
+    for arrayElement in input_data.all_joint_data_array:
+        FK = numpy.zeros(shape = (4, 4))
+        manip_kin.r.ForwardKinematics(numpy.array(arrayElement), FK)
         all_forward_kinematics_array.append(FK)
 
-    #create list of only cartesian positions
+    # create list of only cartesian positions
     for arrayElement in all_forward_kinematics_array:
         xyz = []
         for axis in range(3):
             xyz.append(arrayElement[axis][3])
         all_cartesian_positions_array.append(xyz)
     nb_of_positions = len(all_cartesian_positions_array)
-    #create numpy array for use in nmrRegistrationRigid
+    # create numpy array for use in nmrRegistrationRigid
     coordinates_being_tested = numpy.zeros(shape=(nb_of_positions,3))
     
     for coordinate in range(len(all_cartesian_positions_array)):
          coordinates_being_tested[coordinate] = [all_cartesian_positions_array[coordinate][0], all_cartesian_positions_array[coordinate][1], all_cartesian_positions_array[coordinate][2]]
     all_coordinates_under_testing = coordinates_being_tested.astype(float)
 
-    #calculate fre
-    fre = nmrRegistrationRigid(all_coordinates_actual, all_coordinates_under_testing)[1]
+    # calculate fre
+    fre = nmrRegistrationRigid(input_data.all_coordinates_actual, all_coordinates_under_testing)[1]
 
     #return fre and used offsets
     return_array = [fre, 
@@ -105,7 +114,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     return return_array
 
 
-def optimal_offsets(offsets_list, sample_range):
+def optimal_offsets(offsets_list, sample_range, manip_kin, input_data):
     offset_ideals = []
     ideal_error = 100000 #set to unobtainably-large number so that a new ideal will always be accepted
     #set the percent dependent on the scale size
@@ -128,14 +137,15 @@ def optimal_offsets(offsets_list, sample_range):
                 for joint5 in range(-5,6):
                     for joint6 in range(-5,6):
                         progress = progress + 1
-                        input_array = [joint2,joint3,joint4,joint5,joint6]
-                        output = average_distance_computation(input_array, sample_range, offsets_list)
+                        input_array = [joint2, joint3, joint4, joint5, joint6]
+                        output = average_distance_computation(input_array, sample_range, offsets_list, manip_kin, input_data)
 
                         #check if gathered value is better then previous, if so set as new ideal
                         if output[0] < ideal_error:
                             ideal_error = output[0]
                             offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
                         #if two ideals are found with the same fre, use the one with less overall offset change
+                        """
                         elif output[0] == ideal_error:
                             old_change = 0
                             new_change = 0
@@ -145,6 +155,7 @@ def optimal_offsets(offsets_list, sample_range):
                             if old_change < new_change:
                                 ideal_error = output[0]
                                 offset_ideals = [output[1],output[2],output[3],output[4],output[5]]
+                        """
 
     #display final percent
     if sample_range == (1.0/10.0)**1:
@@ -168,11 +179,16 @@ def run():
     f = open(csv_file_name, 'wb')
     writer = csv.writer(f)
 
+    # create kinematic chain for all iterations
+    manip_kin = extended_manipulator(dvpsm_file_location)
+    # load reference data, i.e. tracker 3D positions and corresponding PSM joint values
+    input_data = data()
+
     #begin testing (each itteration of loop is another degree of precision)
     optimal_offset_list = [0.0,0.0,0.0,0.0,0.0]
     for sample_range_size in range(4):
         sample_range = (1.0/10.0)**(sample_range_size +1)
-        offset_output = optimal_offsets(optimal_offset_list,sample_range)
+        offset_output = optimal_offsets(optimal_offset_list, sample_range, manip_kin, input_data)
         optimal_offset_list = offset_output[0]
         ideal_error = offset_output[1]
         print " \n scale size ", (1.0/10.0)**(sample_range_size +1), "done testing"
