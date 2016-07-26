@@ -134,11 +134,11 @@ class calibration_testing:
             (transformation, FRE) = nmrRegistrationRigid(atracsys_coordinates_for_testing,dvrk_coordinates_for_testing)
             #print 'dvrk positions: \n', dvrk_coordinates_for_testing
             #print 'atracsys positions: \n', atracsys_coordinates_for_testing
-            print 'Transformation: \n', transformation
+            print '\n Transformation: \n', transformation
             print 'FRE: \n', FRE
 
-            Transformation.Rotation().dump('atracsys2dvrk_rotation')
-            Transformation.Translation().dump('atracsys2dvrk_translation')
+            transformation.Rotation().dump('atracsys2dvrk_rotation')
+            transformation.Translation().dump('atracsys2dvrk_translation')
                         
 
             rospy.signal_shutdown('Finished Task')
