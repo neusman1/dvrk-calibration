@@ -49,9 +49,9 @@ class calibration_testing:
             print "The robot will now move to its joint maxima and minima to ensure the atracsys has full vision"
             time.sleep(2)
             
-            for joint0 in range(3):
-                for joint1 in range(3):
-                    self._robot.move_joint(numpy.array([-70*d2r + (70*joint0)*d2r, -40*d2r + (40*joint1)*d2r, 0.235,0.0,0.0,0.0,-0.20]))
+            for joint0 in range(2):
+                for joint1 in range(2):
+                    self._robot.move_joint(numpy.array([-70*d2r + (140*joint0)*d2r, -40*d2r + (80*joint1)*d2r, 0.235,0.0,0.0,0.0,-0.20]))
                     
                     if len(self._points) == 0:
                         print "The Atracsys cannot see this joint position, please adjust the dvrk arm"
@@ -108,7 +108,7 @@ class calibration_testing:
             sys.stdout.write('\rProgress %02.3f%%' %(100))
             self._robot.move_joint(numpy.array([0.0,0.0,0.1,0.0,0.0,0.0,-0.20]))
             
-            """
+            
             #write values to csv file
             csv_file_name = 'Atracsys_joint_motion_output.csv'
             print "\n Values will be saved in: ", csv_file_name
@@ -117,7 +117,7 @@ class calibration_testing:
             writer.writerow(["atracsys positions","","","dvrk cartesian positions", "", "", "dvrk joint positions"])
             for row in range(len(recorded_atracsys_positions)):
                 writer.writerow([recorded_atracsys_positions[row][0],recorded_atracsys_positions[row][1],recorded_atracsys_positions[row][2],recorded_dvrk_cartesian_positions[row][0],recorded_dvrk_cartesian_positions[row][1],recorded_dvrk_cartesian_positions[row][2],recorded_dvrk_joint_positions[row][0],recorded_dvrk_joint_positions[row][1],recorded_dvrk_joint_positions[row][2],recorded_dvrk_joint_positions[row][3],recorded_dvrk_joint_positions[row][4],recorded_dvrk_joint_positions[row][5],recorded_dvrk_joint_positions[row][6]])
-            """
+            
 
             #dvrk points to numpy array
             number_of_points = len(recorded_atracsys_positions)
