@@ -39,7 +39,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     k3.SetPositionOffset( k3offset + increment_of_change_array[1] + offsets_list[1])
     k4.SetPositionOffset( k4offset + increment_of_change_array[2] + offsets_list[2])
     k5.SetPositionOffset( k5offset + increment_of_change_array[3] + offsets_list[3])
-    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.1016 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0102 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
 
     #set up tooltip offset
     tt = robManipulator()
