@@ -4,7 +4,7 @@
 #Author: Nick Eusman
 
 #To Do:
-# -ideally, the system wouldn't have a "before" element, but rather use the desired position in the dvrk's case, and the same point translated to the atracsys' cartesian system in the case of the atracsys. (joint current before should be a baseline number anyhow) <---Implementation?
+# -test different weights and try to make ap redictive model
 
 
 import sys
