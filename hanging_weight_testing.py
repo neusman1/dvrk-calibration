@@ -17,6 +17,17 @@ import time
 from sensor_msgs.msg import PointCloud
 import pickle
 
+
+def average_of_points(list_of_points):
+    totals = [ [], [], [] ]
+    average = [ ]
+    for axis in range(len(list_of_points[0])):
+        for nb in range(len(list_of_points)):
+            totals[axis].append(list_of_points[nb][axis])
+    for axis in range(len(list_of_points[0])):
+        average.append(sum(totals[axis])/len(totals[axis]))
+    return average
+
 class calibration_testing:
 
     def __init__(self, robotName):
@@ -25,12 +36,13 @@ class calibration_testing:
         self._points = [0.0, 0.0, 0.0]
         rospy.Subscriber('/atracsys/fiducials', PointCloud, self.points_callback)
 
-    def points_callback(self,data):
+    def points_callback(self, data):
         self._points[:] = data.points
 
     def run(self):
+        #"""
         dvrk_desired_position = []
-        dvrk_currnet_position = []
+        dvrk_current_position = []
         atracsys_position = []
         
         #import transformation matirx
@@ -46,9 +58,26 @@ class calibration_testing:
 
         while not rospy.is_shutdown():
             self._robot.move_joint(numpy.array([0.0,0.0,0.235,0.0,0.0,0.0,-0.20]))
-            for sample_nb in range(20):
-                atracsys_position.append( [(self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ]  )
+            raw_input('place hanging weight on tooltip and hit [enter]')
+            for sample_nb in range(50):
+                atracsys_pos = numpy.array([ (self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ])
+                atracsys2dvrk = rotation.dot(atracsys_pos)+translation
+                atracsys_position.append( [ atracsys2dvrk[0], atracsys2dvrk[1], atracsys2dvrk[2] ]  )
+                dvrk_current_position.append([self._robot.get_current_position().p[0], self._robot.get_current_position().p[1], self._robot.get_current_position().p[2]])
+                dvrk_desired_position.append([self._robot.get_desired_position().p[0], self._robot.get_desired_position().p[1], self._robot.get_desired_position().p[2]])
+                time.sleep(.1)
+            average_desired_position = average_of_points(dvrk_desired_position)
+            average_current_position = average_of_points(dvrk_current_position)
+            average_atracsys_position = average_of_points(atracsys_position)
+            
+            print 'desired: ', average_desired_position
+            print 'current: ', average_current_position
+            print 'atracsys: ', average_atracsys_position
+            print 'change in x of atracsys v. desired: ', average_atracsys_position[0] - average_desired_position[0]
+            print 'change in x of current v. desired: ', average_current_position[0] - average_desired_position[0]
+            print 'differnece in changes: ', (average_atracsys_position[0] - average_desired_position[0]) - (average_current_position[0] - average_desired_position[0])
 
+            rospy.signal_shutdown('Finished Task')
         """
         recorded_atracsys_position = [ [], [] ]
         recorded_current_joint_position = [ [], [] ]
@@ -112,9 +141,8 @@ class calibration_testing:
             print 'dvrk X change: ', recorded_dvrk_position_averages[1][0] - recorded_dvrk_position_averages[0][0]
             print 'difference in atracsys and dvrk change: ', (recorded_atracsys_position_averages[1][1] - recorded_atracsys_position_averages[0][1]) - (recorded_dvrk_position_averages[1][0] - recorded_dvrk_position_averages[0][0])
 
-
-        """
             rospy.signal_shutdown('Finished Task')
+        """
 
 if (len(sys.argv) != 2):
     print sys.argv[0] + ' requires one argument, i.e. name of dVRK arm'
