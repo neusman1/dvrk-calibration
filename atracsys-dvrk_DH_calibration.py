@@ -75,7 +75,7 @@ def average_distance_computation(joint_increment_number_array, sample_range, off
     manip_kin.k5.SetPositionOffset(manip_kin.k5offset + increment_of_change_array[3] + offsets_list[3])
 
     # modify tool tip
-    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0102 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
+    tooltip = array([[0.0, -1.0, 0.0, 0.0], [ 0.0,  0.0,  1.0,  0.0093 + increment_of_change_array[4] + offsets_list[4] ], [-1.0,  0.0,  0.0,  0.0], [ 0.0,  0.0,  0.0,  1.0]])
     manip_kin.tt.Rtw0 = tooltip
 
     all_forward_kinematics_array = []
