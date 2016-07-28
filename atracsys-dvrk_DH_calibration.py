@@ -1,6 +1,6 @@
 #created July 19th, 2016
 # To Do:
-# -
+# -Made diplayed final offsets the new offsets (as opposed to just the amount they need to be changed by)
 
 import sys
 import csv
