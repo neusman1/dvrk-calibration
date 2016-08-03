@@ -5,8 +5,19 @@
 
 #To Do:
 # -logout so as to be in dialout group
-# -work on collecting data (list in phone notes)
-# -write simple code to get transformation
+# -plot the force vs current atracsys position/curent cartesian position (as well as difference between the two) ^
+# -timestamp files  ^
+# -retake data in new format  ^
+# -linear fit between ln coefficient and z depth in python  ^
+# -create code to evaluate model and coefs. ^
+# -incease registration volume   ^
+# -check the position error at zero force (ideally close to zero)  --(much better, accurate to +-.5 mm) ^
+# -compare wrench body force to optiforce force sensor 
+# \-if the wrench looks good, use it instead of FT sensor
+# -try linear fit with predictive model instead of logarithmic
+# -plot ln v. z pos
+# -retake five more values at each z pos, redo tranformation matrix first
+
 
 
 import sys
@@ -17,6 +28,7 @@ import math
 import numpy
 import PyKDL
 import time
+import datetime
 from sensor_msgs.msg import PointCloud
 from geometry_msgs.msg import WrenchStamped
 import pickle
@@ -60,17 +72,17 @@ class force_testing:
         current_cartesian_position = []
         desired_cartesian_position = []
         optoforce_forces = []
-        zPosition = -0.105 #Default is -0.105
+        current_joint_positions = []
+        zPosition = -0.205  #Default is -0.105
         while not rospy.is_shutdown():
-            atracsys_pos = numpy.array([ (self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ])
-            atracsys2dvrk = rotation.dot(atracsys_pos)+translation
-
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             time.sleep(.3)
             raw_input('when force sensor is under tooltip, hit [enter]')
-            for position_nb in range(1,6):
-                self._robot.move(PyKDL.Vector((0.001 * position_nb), 0.0, zPosition))
+            for position_nb in range(1,21):
+                self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
                 for sample_nb in range(20):
+                    atracsys_pos = numpy.array([ (self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ])
+                    atracsys2dvrk = rotation.dot(atracsys_pos)+translation
                     current_wrench_body.append(self._robot.get_current_wrench_body()[:])
                     current_atracsys_position.append([atracsys2dvrk[0], atracsys2dvrk[1], atracsys2dvrk[2]])
                     current_joint_effort.append(self._robot.get_current_joint_effort()[:])
@@ -78,16 +90,43 @@ class force_testing:
                     current_cartesian_position.append([self._robot.get_current_position().p[0], self._robot.get_current_position().p[1], self._robot.get_current_position().p[2]])
                     desired_cartesian_position.append([self._robot.get_desired_position().p[0], self._robot.get_desired_position().p[1], self._robot.get_desired_position().p[2]])
                     optoforce_forces.append([self._force.x, self._force.y, self._force.z])
+                    current_joint_positions.append(self._robot.get_current_joint_position()[:])
+                    time.sleep(.02)
                 print 'position recorded'
                 time.sleep(.5)
-            
+            self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.105))
+          
+            #find ln coefficient
+            zForce = []
+            xCartesian = []
+            xAtracsys = []
+            tested_list = []
+            for cord in optoforce_forces:
+                zForce.append(cord[2])
+            for cord in current_cartesian_position:
+                xCartesian.append(cord[0])
+            for cord in current_atracsys_position:
+                xAtracsys.append(cord[0])
+            cartesian_v_atracsys_diff = [ a - b for a,b in zip( xCartesian,  xAtracsys) ]
+            untested_list = zip(zForce, cartesian_v_atracsys_diff)
+            for cord in untested_list:
+                if cord[0] > 0.08:
+                    tested_list.append(cord)
+            force_tested, diff_for_plotting = zip(*tested_list)
+            force_tested = list(force_tested)
+            diff_for_plotting = list(diff_for_plotting)
+            force_for_plotting = [numpy.log(z) for z in force_tested ]
+            ln_coefficient, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
+            print 'ln_coefficient: ', ln_coefficient
+
             #write values to csv file
-            csv_file_name = 'force_testing_output_at_z-pos_of_' + str(zPosition) + '.csv'
+            csv_file_name = 'ForceTestingData/force_testing_output_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
-            writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", ""])
+            writer.writerow(['ln_coefficient:', ln_coefficient])
+            writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", "","current joint positions"])
             for row in range(len(current_atracsys_position)):
                 writer.writerow([current_wrench_body[row][0],
                                  current_wrench_body[row][1],
@@ -120,9 +159,15 @@ class force_testing:
                                  desired_cartesian_position[row][2],
                                  optoforce_forces[row][0],
                                  optoforce_forces[row][1],
-                                 optoforce_forces[row][2] ])
+                                 optoforce_forces[row][2],
+                                 current_joint_positions[row][0],
+                                 current_joint_positions[row][1],
+                                 current_joint_positions[row][2],
+                                 current_joint_positions[row][3],
+                                 current_joint_positions[row][4],
+                                 current_joint_positions[row][5],
+                                 current_joint_positions[row][6] ])
 
-            
             rospy.signal_shutdown('Finished Task')
 
 if (len(sys.argv) != 2):
