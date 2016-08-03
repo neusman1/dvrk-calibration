@@ -40,7 +40,7 @@ class calibration_testing:
                 for yCoordinate in range(3):
                     for zCoordinate in range(3):
                         #move the robot
-                        self._robot.move(PyKDL.Vector((0.025 + (xCoorinate * -0.025)), (-0.025 + (yCoordinate * 0.025)), (-0.1 + (zCoordinate * -0.025))))
+                        self._robot.move(PyKDL.Vector((0.025 + (xCoorinate * -0.025)), (-0.025 + (yCoordinate * 0.025)), (-0.1 + (zCoordinate * -0.05))))
                         time.sleep(1)
                         #record positional data
                         if len(self._points) == 1:
