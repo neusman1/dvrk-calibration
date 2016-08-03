@@ -4,7 +4,7 @@
 #Author: Nick Eusman
 
 #To Do:
-# -test different weights and try to make ap redictive model
+# -test different weights and try to make a predictive model
 
 
 import sys
