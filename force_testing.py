@@ -15,9 +15,11 @@
 # -compare wrench body force to optiforce force sensor 
 # \-if the wrench looks good, use it instead of FT sensor
 # -try linear fit with predictive model instead of logarithmic
-# -plot ln v. z pos
-# -retake five more values at each z pos, redo tranformation matrix first
-
+# -plot ln v. z pos ^
+# -retake five more values at each z pos, redo tranformation matrix first ^
+# -figure out why line of best fit is messed up, possibly use own method?
+# -fix predictive linear fit issues plotting linear option
+# -collect better data (fix data collection repeating values)
 
 
 import sys
@@ -73,7 +75,7 @@ class force_testing:
         desired_cartesian_position = []
         optoforce_forces = []
         current_joint_positions = []
-        zPosition = -0.205  #Default is -0.105
+        zPosition = -0.105  #Default is -0.105
         while not rospy.is_shutdown():
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             time.sleep(.3)
@@ -81,16 +83,49 @@ class force_testing:
             for position_nb in range(1,21):
                 self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
                 for sample_nb in range(20):
-                    atracsys_pos = numpy.array([ (self._points[0].x)/10**3, (self._points[0].y)/10**3, (self._points[0].z)/10**3 ])
+                    atracsys_pos = numpy.array([ (self._points[0].x)/10**3,
+                                                 (self._points[0].y)/10**3, 
+                                                 (self._points[0].z)/10**3 ])
                     atracsys2dvrk = rotation.dot(atracsys_pos)+translation
-                    current_wrench_body.append(self._robot.get_current_wrench_body()[:])
-                    current_atracsys_position.append([atracsys2dvrk[0], atracsys2dvrk[1], atracsys2dvrk[2]])
-                    current_joint_effort.append(self._robot.get_current_joint_effort()[:])
-                    desired_joint_effort.append(self._robot.get_desired_joint_effort()[:])
-                    current_cartesian_position.append([self._robot.get_current_position().p[0], self._robot.get_current_position().p[1], self._robot.get_current_position().p[2]])
-                    desired_cartesian_position.append([self._robot.get_desired_position().p[0], self._robot.get_desired_position().p[1], self._robot.get_desired_position().p[2]])
-                    optoforce_forces.append([self._force.x, self._force.y, self._force.z])
-                    current_joint_positions.append(self._robot.get_current_joint_position()[:])
+                    current_wrench_body.append([self._robot.get_current_wrench_body()[0], 
+                                                self._robot.get_current_wrench_body()[1], 
+                                                self._robot.get_current_wrench_body()[2], 
+                                                self._robot.get_current_wrench_body()[3], 
+                                                self._robot.get_current_wrench_body()[4], 
+                                                self._robot.get_current_wrench_body()[5] ])
+                    current_atracsys_position.append([atracsys2dvrk[0], 
+                                                      atracsys2dvrk[1], 
+                                                      atracsys2dvrk[2]])
+                    current_joint_effort.append([self._robot.get_current_joint_effort()[0], 
+                                                 self._robot.get_current_joint_effort()[1], 
+                                                 self._robot.get_current_joint_effort()[2], 
+                                                 self._robot.get_current_joint_effort()[3], 
+                                                 self._robot.get_current_joint_effort()[4], 
+                                                 self._robot.get_current_joint_effort()[5], 
+                                                 self._robot.get_current_joint_effort()[6] ]) 
+                    desired_joint_effort.append([self._robot.get_desired_joint_effort()[0], 
+                                                 self._robot.get_desired_joint_effort()[1], 
+                                                 self._robot.get_desired_joint_effort()[2], 
+                                                 self._robot.get_desired_joint_effort()[3], 
+                                                 self._robot.get_desired_joint_effort()[4], 
+                                                 self._robot.get_desired_joint_effort()[5],
+                                                 self._robot.get_desired_joint_effort()[6] ])
+                    current_cartesian_position.append([self._robot.get_current_position().p[0], 
+                                                       self._robot.get_current_position().p[1], 
+                                                       self._robot.get_current_position().p[2]])
+                    desired_cartesian_position.append([self._robot.get_desired_position().p[0], 
+                                                       self._robot.get_desired_position().p[1], 
+                                                       self._robot.get_desired_position().p[2]])
+                    optoforce_forces.append([self._force.x, 
+                                             self._force.y, 
+                                             self._force.z])
+                    current_joint_positions.append([self._robot.get_current_joint_position()[0], 
+                                                    self._robot.get_current_joint_position()[1], 
+                                                    self._robot.get_current_joint_position()[2], 
+                                                    self._robot.get_current_joint_position()[3], 
+                                                    self._robot.get_current_joint_position()[4], 
+                                                    self._robot.get_current_joint_position()[5], 
+                                                    self._robot.get_current_joint_position()[6] ])
                     time.sleep(.02)
                 print 'position recorded'
                 time.sleep(.5)
@@ -113,19 +148,18 @@ class force_testing:
             for cord in untested_list:
                 if cord[0] > 0.08:
                     tested_list.append(cord)
-            force_tested, diff_for_plotting = zip(*tested_list)
-            force_tested = list(force_tested)
+            force_for_plotting, diff_for_plotting = zip(*tested_list)
+            force_for_plotting = list(force_for_plotting)
             diff_for_plotting = list(diff_for_plotting)
-            force_for_plotting = [numpy.log(z) for z in force_tested ]
-            ln_coefficient, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
-            print 'ln_coefficient: ', ln_coefficient
+            coefficient, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
+            print 'coefficient: ', coefficient
 
             #write values to csv file
             csv_file_name = 'ForceTestingData/force_testing_output_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
-            writer.writerow(['ln_coefficient:', ln_coefficient])
+            writer.writerow(['coefficient:', coefficient])
             writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", "","current joint positions"])
             for row in range(len(current_atracsys_position)):
                 writer.writerow([current_wrench_body[row][0],
