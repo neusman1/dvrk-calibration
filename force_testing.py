@@ -75,7 +75,7 @@ class force_testing:
         desired_cartesian_position = []
         optoforce_forces = []
         current_joint_positions = []
-        zPosition = -0.105  #Default is -0.105
+        zPosition = -0.1925  #Default is -0.105
         while not rospy.is_shutdown():
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             time.sleep(.3)
