@@ -102,19 +102,22 @@ def run():
             Cartesian[axis].append(float(reader[row][(23 + axis)]))
             Atracsys[axis].append(float(reader[row][(6 + axis)]))
     for coordinate in range(len(Force[0])):
-            calculated_absolute[0].append( Cartesian[0][coordinate] - (Force[0][coordinate] * predicted_slope) )
-            calculated_absolute[1].append( Cartesian[1][coordinate] ) #only modify axis under testing
-            calculated_absolute[2].append( Cartesian[2][coordinate] )
+        calculated_absolute[0].append( Cartesian[0][coordinate] - (Force[0][coordinate] * predicted_slope) )
+        calculated_absolute[1].append( Cartesian[1][coordinate] ) #only modify axis under testing
+        calculated_absolute[2].append( Cartesian[2][coordinate] )
     for axis in range(3):
         error_corrected = []
         error_uncorrected = []
         for coordinate in range(len(Cartesian[0])):
             error_corrected.append( calculated_absolute[axis][coordinate] - Atracsys[axis][coordinate] )
             error_uncorrected.append( Cartesian[axis][coordinate] - Atracsys[axis][coordinate] )
-        error_values[axis] = ( math.fsum(error_corrected)/len(error_corrected) )
-        error_without_correction[axis] = ( math.fsum(error_uncorrected)/len(error_uncorrected) )
-    print error_values
-    print error_without_correction
+        for sample in range(20): #FINISH
+            error_values[axis].append(  math.fsum(error_corrected[0 + (20 * sample):20 + (20 * sample)])/ 20  ) 
+            error_without_correction[axis].append(  math.fsum(error_uncorrected[0 + (20 * sample):20 + (20 * sample)])/ 20  ) 
+    #print error_values
+    #print error_without_correction
+    print error_values[0][19]
+    print error_without_correction[0][19]
     
     """
     dvrk_wrench = []
