@@ -1,12 +1,15 @@
 # Calibration
+(This readme is incomplete and undergoing edits)
 
 ## Using the DH Calibration 
 ### (Step One)
 
 
 use dh calib to modify offsets in json file
+
 ```json
 ```
+Make sure to restart the consol after making changes to the json file
 
 ## Creating a predictive model to evealuate tooltip deflection
 ### Setting up the nodes
