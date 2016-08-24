@@ -4,7 +4,8 @@
 #Author: Nick Eusman
 
 #To Do:
-# -finish code
+# -clean up existing code
+# -add option to display other then final point?
 
 import numpy
 import csv
@@ -73,14 +74,17 @@ def run():
     plt.axis([-0.21, -0.1 , 0.0005, 0.002])
     plt.show()
     """
-    """
-    #predicted_slope at z pos of -0.1425
-    predicted_slope = (slope * -0.1425) + offset
-    reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))
-    """
-    #predicted_slope at z pos of -0.1925
-    predicted_slope = (slope * -0.1925) + offset
-    reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))
+
+    test_point_145or195 = raw_input('Choose between the 145 or 195 test point. type either "145" or "195" then hit [enter] \n ')
+
+    if test_point_145or195 == '145':
+        #predicted_slope at z pos of -0.1425
+        predicted_slope = (slope * -0.1425) + offset
+        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))
+    elif test_point_145or195 == '195':
+        #predicted_slope at z pos of -0.1925
+        predicted_slope = (slope * -0.1925) + offset
+        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))
     
     gathered_slope = float(list(reader)[0][-1:][0])
     print 'gathered_slope: ', gathered_slope
@@ -116,7 +120,9 @@ def run():
             error_without_correction[axis].append(  math.fsum(error_uncorrected[0 + (20 * sample):20 + (20 * sample)])/ 20  ) 
     #print error_values
     #print error_without_correction
+    print 'final point error  for ' + test_point_145or195 + ' test point with ' + dvrk_or_opto_wrench + ' forces with deflection correction'
     print error_values[0][19]
+    print 'final point error  for ' + test_point_145or195 + ' test point with ' + dvrk_or_opto_wrench + ' forces without deflection correction'
     print error_without_correction[0][19]
     
     """
