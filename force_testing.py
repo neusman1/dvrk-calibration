@@ -4,22 +4,8 @@
 #Author: Nick Eusman
 
 #To Do:
-# -logout so as to be in dialout group
-# -plot the force vs current atracsys position/curent cartesian position (as well as difference between the two) ^
-# -timestamp files  ^
-# -retake data in new format  ^
-# -linear fit between ln coefficient and z depth in python  ^
-# -create code to evaluate model and coefs. ^
-# -incease registration volume   ^
-# -check the position error at zero force (ideally close to zero)  --(much better, accurate to +-.5 mm) ^
-# -compare wrench body force to optiforce force sensor 
-# \-if the wrench looks good, use it instead of FT sensor
-# -try linear fit with predictive model instead of logarithmic
-# -plot ln v. z pos ^
-# -retake five more values at each z pos, redo tranformation matrix first ^
-# -figure out why line of best fit is messed up, possibly use own method?
-# -fix predictive linear fit issues plotting linear option
-# -collect better data (fix data collection repeating values)
+# -change code to accomadate for testing all axis
+# -take ln coefficient out of csv file save and evaluation in predictive linear fit code
 
 
 import sys
@@ -75,14 +61,27 @@ class force_testing:
         desired_cartesian_position = []
         optoforce_forces = []
         current_joint_positions = []
-        zPosition = -0.105  #Default is -0.105
+        axis_under_testing = raw_input("Please type the axis which is to be tested ('x', 'y', or 'z') then hit [enter]")
+        if axis_under_testing == 'x' or axis_under_testing == 'y' or axis_under_testing == 'z': 
+            zPosition = raw_intput("Please type the depth you would like to start testing at between -0.105 and -0.205 then hit [enter] (typically increments of .025 are used)")
+        else:
+            print "incorrect input"
+
         while not rospy.is_shutdown():
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             time.sleep(.3)
             raw_input('when force sensor is under tooltip, hit [enter]')
-            for position_nb in range(1,21):
-                self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
-                for sample_nb in range(20):
+            
+            for position_nb in range(1,21): #move to 20 positions
+                if axis_under_testing == 'x':
+                    self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
+                elif axis_under_testing == 'y':
+                    self._robot.move(PyKDL.Vector(0.0, (0.00025 * position_nb), zPosition)) ###VALUES NEED TESTING
+                elif axis_under_testing == 'z':
+                    self._robot.move(PyKDL.Vector(0.0, 0.0, (-0.00025 * position_nb) + zPosition)) ###VALUES NEED TESTING
+
+
+                for sample_nb in range(20): #take 20 samples at each position
                     atracsys_pos = numpy.array([ (self._points[0].x)/10**3,
                                                  (self._points[0].y)/10**3, 
                                                  (self._points[0].z)/10**3 ])
@@ -127,11 +126,12 @@ class force_testing:
                                                     self._robot.get_current_joint_position()[5], 
                                                     self._robot.get_current_joint_position()[6] ])
                     time.sleep(.02)
-                print 'position recorded'
+                print 'position recorded ' + position_nb + '/20'
                 time.sleep(.5)
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.105))
-          
+
+            """ BEING TAKEN OUT --- NO LONGER IN USE
             #find ln coefficient
             zForce = []
             xCartesian = []
@@ -153,13 +153,14 @@ class force_testing:
             diff_for_plotting = list(diff_for_plotting)
             coefficient, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
             print 'coefficient: ', coefficient
-
+            """
+            
             #write values to csv file
             csv_file_name = 'ForceTestingData/force_testing_output_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
-            writer.writerow(['coefficient:', coefficient])
+            writer.writerow(['coefficient:', 'NO LONGER IN USE']) ###CHANGE
             writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", "","current joint positions"])
             for row in range(len(current_atracsys_position)):
                 writer.writerow([current_wrench_body[row][0],
