@@ -126,7 +126,7 @@ class force_testing:
                                                     self._robot.get_current_joint_position()[5], 
                                                     self._robot.get_current_joint_position()[6] ])
                     time.sleep(.02)
-                print 'position recorded ' + position_nb + '/20'
+                print 'position recorded ', position_nb, '/20'
                 time.sleep(.5)
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.105))
@@ -162,46 +162,46 @@ class force_testing:
             writer = csv.writer(f)
             writer.writerow(['coefficient:', 'NO LONGER IN USE']) ###CHANGE
             writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", "","current joint positions"])
-            for row in range(len(current_atracsys_position)):
-                writer.writerow([current_wrench_body[row][0],
-                                 current_wrench_body[row][1],
-                                 current_wrench_body[row][2],
-                                 current_wrench_body[row][3],
-                                 current_wrench_body[row][4],
-                                 current_wrench_body[row][5],
-                                 current_atracsys_position[row][0],
-                                 current_atracsys_position[row][1],
-                                 current_atracsys_position[row][2],
-                                 current_joint_effort[row][0],
-                                 current_joint_effort[row][1],
-                                 current_joint_effort[row][2],
-                                 current_joint_effort[row][3],
-                                 current_joint_effort[row][4],
-                                 current_joint_effort[row][5],
-                                 current_joint_effort[row][6],
-                                 desired_joint_effort[row][0],
-                                 desired_joint_effort[row][1],
-                                 desired_joint_effort[row][2],
-                                 desired_joint_effort[row][3],
-                                 desired_joint_effort[row][4],
-                                 desired_joint_effort[row][5],
-                                 desired_joint_effort[row][6],
-                                 current_cartesian_position[row][0],
-                                 current_cartesian_position[row][1],
-                                 current_cartesian_position[row][2],
-                                 desired_cartesian_position[row][0],
-                                 desired_cartesian_position[row][1],
-                                 desired_cartesian_position[row][2],
-                                 optoforce_forces[row][0],
-                                 optoforce_forces[row][1],
-                                 optoforce_forces[row][2],
-                                 current_joint_positions[row][0],
-                                 current_joint_positions[row][1],
-                                 current_joint_positions[row][2],
-                                 current_joint_positions[row][3],
-                                 current_joint_positions[row][4],
-                                 current_joint_positions[row][5],
-                                 current_joint_positions[row][6] ])
+            for row in range(len(current_atracsys_position)):         #column number for data in csv file
+                writer.writerow([current_wrench_body[row][0],         #1
+                                 current_wrench_body[row][1],         #2
+                                 current_wrench_body[row][2],         #3
+                                 current_wrench_body[row][3],         #4
+                                 current_wrench_body[row][4],         #5
+                                 current_wrench_body[row][5],         #6
+                                 current_atracsys_position[row][0],   #7
+                                 current_atracsys_position[row][1],   #8
+                                 current_atracsys_position[row][2],   #9
+                                 current_joint_effort[row][0],        #10
+                                 current_joint_effort[row][1],        #11
+                                 current_joint_effort[row][2],        #12
+                                 current_joint_effort[row][3],        #13
+                                 current_joint_effort[row][4],        #14
+                                 current_joint_effort[row][5],        #15
+                                 current_joint_effort[row][6],        #16
+                                 desired_joint_effort[row][0],        #17
+                                 desired_joint_effort[row][1],        #18
+                                 desired_joint_effort[row][2],        #19
+                                 desired_joint_effort[row][3],        #20
+                                 desired_joint_effort[row][4],        #21
+                                 desired_joint_effort[row][5],        #22
+                                 desired_joint_effort[row][6],        #23
+                                 current_cartesian_position[row][0],  #24
+                                 current_cartesian_position[row][1],  #25
+                                 current_cartesian_position[row][2],  #26
+                                 desired_cartesian_position[row][0],  #27
+                                 desired_cartesian_position[row][1],  #28
+                                 desired_cartesian_position[row][2],  #29
+                                 optoforce_forces[row][0],            #30
+                                 optoforce_forces[row][1],            #31
+                                 optoforce_forces[row][2],            #32
+                                 current_joint_positions[row][0],     #33
+                                 current_joint_positions[row][1],     #34
+                                 current_joint_positions[row][2],     #35
+                                 current_joint_positions[row][3],     #36
+                                 current_joint_positions[row][4],     #37
+                                 current_joint_positions[row][5],     #38
+                                 current_joint_positions[row][6] ])   #39
 
             rospy.signal_shutdown('Finished Task')
 
