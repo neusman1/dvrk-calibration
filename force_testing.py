@@ -4,7 +4,7 @@
 #Author: Nick Eusman
 
 #To Do:
-# -change code to accomadate for testing all axis
+# -change code to accommodate for testing all axis
 # -take ln coefficient out of csv file save and evaluation in predictive linear fit code
 
 
