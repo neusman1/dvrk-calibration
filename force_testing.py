@@ -4,8 +4,9 @@
 #Author: Nick Eusman
 
 #To Do:
-# -change code to accommodate for testing all axis
-# -take ln coefficient out of csv file save and evaluation in predictive linear fit code
+# -change code to accommodate for testing all axis (DONE)
+# -take ln coefficient out of csv file save and evaluation in predictive linear fit code 
+# -modify predictive linear fit to acomidate for differing axis
 
 
 import sys
@@ -21,16 +22,6 @@ from sensor_msgs.msg import PointCloud
 from geometry_msgs.msg import WrenchStamped
 import pickle
 
-
-def average_of_points(list_of_points):
-    totals = [ [], [], [] ]
-    average = [ ]
-    for axis in range(len(list_of_points[0])):
-        for nb in range(len(list_of_points)):
-            totals[axis].append(list_of_points[nb][axis])
-    for axis in range(len(list_of_points[0])):
-        average.append(sum(totals[axis])/len(totals[axis]))
-    return average
 
 class force_testing:
 
@@ -61,13 +52,19 @@ class force_testing:
         desired_cartesian_position = []
         optoforce_forces = []
         current_joint_positions = []
-        axis_under_testing = raw_input("Please type the axis which is to be tested ('x', 'y', or 'z') then hit [enter]")
-        if axis_under_testing == 'x' or axis_under_testing == 'y' or axis_under_testing == 'z': 
-            zPosition = raw_intput("Please type the depth you would like to start testing at between -0.105 and -0.205 then hit [enter] (typically increments of .025 are used)")
-        else:
-            print "incorrect input"
-
+        
         while not rospy.is_shutdown():
+
+            axis_under_testing = raw_input("Please type the axis which is to be tested ('x', 'y', or 'z') then hit [enter]\n")
+            if axis_under_testing == 'x' or axis_under_testing == 'y' or axis_under_testing == 'z': 
+                zPosition = float(raw_input("Please type the depth you would like to start testing at between -0.105 and -0.205 then hit [enter] (typically increments of .025 are used)\n"))
+                if not (zPosition <= -0.105 and zPosition >= -0.205):
+                    print "incorrect input"
+                    rospy.signal_shutdown('Incorrect z position input')
+            else:
+                print "incorrect input"
+                rospy.signal_shutdown('Incorrect axis input')
+
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             time.sleep(.3)
             raw_input('when force sensor is under tooltip, hit [enter]')
@@ -76,9 +73,9 @@ class force_testing:
                 if axis_under_testing == 'x':
                     self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
                 elif axis_under_testing == 'y':
-                    self._robot.move(PyKDL.Vector(0.0, (0.00025 * position_nb), zPosition)) ###VALUES NEED TESTING
+                    self._robot.move(PyKDL.Vector(0.0, (0.00025 * position_nb), zPosition)) 
                 elif axis_under_testing == 'z':
-                    self._robot.move(PyKDL.Vector(0.0, 0.0, (-0.00025 * position_nb) + zPosition)) ###VALUES NEED TESTING
+                    self._robot.move(PyKDL.Vector(0.0, 0.0, (-0.00025 * position_nb) + zPosition)) 
 
 
                 for sample_nb in range(20): #take 20 samples at each position
@@ -131,36 +128,11 @@ class force_testing:
             self._robot.move(PyKDL.Vector(0.0, 0.0, zPosition))
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.105))
 
-            """ BEING TAKEN OUT --- NO LONGER IN USE
-            #find ln coefficient
-            zForce = []
-            xCartesian = []
-            xAtracsys = []
-            tested_list = []
-            for cord in optoforce_forces:
-                zForce.append(cord[2])
-            for cord in current_cartesian_position:
-                xCartesian.append(cord[0])
-            for cord in current_atracsys_position:
-                xAtracsys.append(cord[0])
-            cartesian_v_atracsys_diff = [ a - b for a,b in zip( xCartesian,  xAtracsys) ]
-            untested_list = zip(zForce, cartesian_v_atracsys_diff)
-            for cord in untested_list:
-                if cord[0] > 0.08:
-                    tested_list.append(cord)
-            force_for_plotting, diff_for_plotting = zip(*tested_list)
-            force_for_plotting = list(force_for_plotting)
-            diff_for_plotting = list(diff_for_plotting)
-            coefficient, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
-            print 'coefficient: ', coefficient
-            """
-            
             #write values to csv file
-            csv_file_name = 'ForceTestingData/force_testing_output_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
+            csv_file_name = 'ForceTestingDataAllAxis/force_testing_output_' + axis_under_testing +'_axis_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
-            writer.writerow(['coefficient:', 'NO LONGER IN USE']) ###CHANGE
             writer.writerow(["current wrench body", "", "", "", "", "", "atracsys positions","","","current joint effort", "", "", "", "", "", "","desired joint effort", "", "", "", "", "", "", "current cartesian positions", "", "","desired cartesian positions", "", "", "optoforce forces", "", "","current joint positions"])
             for row in range(len(current_atracsys_position)):         #column number for data in csv file
                 writer.writerow([current_wrench_body[row][0],         #1
