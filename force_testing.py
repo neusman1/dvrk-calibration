@@ -7,6 +7,7 @@
 # -change code to accommodate for testing all axis (DONE)
 # -take ln coefficient out of csv file save and evaluation in predictive linear fit code 
 # -modify predictive linear fit to acomidate for differing axis
+# -discuss possibility of removing optoforce entirely
 
 
 import sys
