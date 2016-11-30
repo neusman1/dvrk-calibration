@@ -4,8 +4,8 @@
 #Author: Nick Eusman
 
 #To Do:
-# -clean up existing code
-# -add option to display other then final point?
+# -change for new force_testing.py format
+# -no longer use optoforce data?
 
 import numpy
 import csv
@@ -14,42 +14,82 @@ import matplotlib.pyplot as plt
 import math
 
 def run():
-    list_of_position_files = [ [],[],[],[],[] ]
-    list_of_coefficients_with_z_position = []
+    list_of_position_files = [ [ [], [], [] ], [ [], [], [] ], [ [], [], [] ], [ [], [], [] ], [ [], [], [] ] ] #list of all files sorted by their five test points and their three axis
+    list_of_coefficients_with_depth = [ [], [], [] ]
+    final_slopes = [ [], [], [] ]
     zforce = []
     xCartesian = []
     xAtracsys = []
     tested_list = []
-    for file in os.listdir("ForceTestingData"):
+    for file in os.listdir("ForceTestingDataAllAxis"):
         if file.startswith("force_testing_output"):
             if '-0.105' in file:
-                list_of_position_files[0].append(file)
+                if 'x_axis' in file:
+                    print '1,1'
+                    list_of_position_files[0][0].append(file)
+                elif 'y_axis' in file:
+                    list_of_position_files[0][1].append(file)
+                elif 'z_axis' in file:
+                    list_of_position_files[0][2].append(file)
             elif '-0.13' in file:
-                list_of_position_files[1].append(file)
+                if 'x_axis' in file:
+                    list_of_position_files[1][0].append(file)
+                elif 'y_axis' in file:
+                    list_of_position_files[1][1].append(file)
+                elif 'z_axis' in file:
+                    list_of_position_files[1][2].append(file)
             elif '-0.155' in file:
-                list_of_position_files[2].append(file)
+                if 'x_axis' in file:
+                    list_of_position_files[2][0].append(file)
+                elif 'y_axis' in file:
+                    list_of_position_files[2][1].append(file)
+                elif 'z_axis' in file:
+                    list_of_position_files[2][2].append(file)
             elif '-0.18' in file:
-                list_of_position_files[3].append(file)
+                if 'x_axis' in file:
+                    list_of_position_files[3][0].append(file)
+                elif 'y_axis' in file:
+                    list_of_position_files[3][1].append(file)
+                elif 'z_axis' in file:
+                    list_of_position_files[3][2].append(file)
             elif '-0.205' in file:
-                list_of_position_files[4].append(file)
+                if 'x_axis' in file:
+                    list_of_position_files[4][0].append(file)
+                elif 'y_axis' in file:
+                    list_of_position_files[4][1].append(file)
+                elif 'z_axis' in file:
+                    list_of_position_files[4][2].append(file)
 
-    dvrk_or_opto_wrench = raw_input('use forces form dvrk or optoforce sensor? type "dvrk" or "opto" then hit [enter] \n ')
+
+    print list_of_position_files
+
+    #calculate coeffiecint of slope between force and deflection for each file using dVRK forces
     for filetype in range(len(list_of_position_files)):
-        for filename in range(len(list_of_position_files[filetype])):
-            reader = list(csv.reader(open('ForceTestingData/' +list_of_position_files[filetype][filename],"rb"), delimiter=','))
-            if dvrk_or_opto_wrench == 'opto':
-                coef = float(list(reader)[0][-1:][0])
-            elif dvrk_or_opto_wrench == 'dvrk':
-                xForce = []
-                xCartesian = []
-                xAtracsys = []
+        for fileaxis in range(len(list_of_position_files[filetype])):
+            for filename in range(len(list_of_position_files[filetype])):
+                reader = list(csv.reader(open('ForceTestingDataAllAxis/' +list_of_position_files[filetype][filename],"rb"), delimiter=','))
+
+                #calculate coefficient
+                axisForce = []
+                axisCartesian = []
+                axisAtracsys = []
                 tested_list = []
-                for cord in range(2,len(reader)):
-                    xForce.append(float(reader[cord][0]))
-                    xCartesian.append(float(reader[cord][23]))
-                    xAtracsys.append(float(reader[cord][6]))
-                cartesian_v_atracsys_diff = [ a - b for a,b in zip( xCartesian,  xAtracsys) ]
-                untested_list = zip(xForce, cartesian_v_atracsys_diff)
+                for cord in range(1,len(reader)):
+                    if fileaxis == 0:
+                        axisForce.append(float(reader[cord][0]))
+                        axisCartesian.append(float(reader[cord][23]))
+                        axisAtracsys.append(float(reader[cord][6]))
+                    elif fileaxis == 1:
+                        axisForce.append(float(reader[cord][1]))
+                        axisCartesian.append(float(reader[cord][24]))
+                        axisAtracsys.append(float(reader[cord][7]))
+                    elif fileaxis == 2:
+                        axisForce.append(float(reader[cord][2]))
+                        axisCartesian.append(float(reader[cord][25]))
+                        axisAtracsys.append(float(reader[cord][8]))
+                        
+                cartesian_v_atracsys_diff = [ a - b for a,b in zip( axisCartesian,  axisAtracsys) ]
+                untested_list = zip(axisForce, cartesian_v_atracsys_diff)
                 for cord in untested_list:
                     if cord[0] > 0.08:
                         tested_list.append(cord)
@@ -57,36 +97,28 @@ def run():
                 force_for_plotting = list(force_for_plotting)
                 diff_for_plotting = list(diff_for_plotting)
                 coef, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1)
-            else:
-                print 'incorrect answer format'
-            list_of_coefficients_with_z_position.append([ round((-0.105 -( 0.025 * filetype)), 5), coef])
 
-    #print list_of_coefficients_with_z_position
+                list_of_coefficients_with_depth[fileaxis].append([ round((-0.105 -( 0.025 * filetype)), 5), coef])  ####FARTHEST POINT WHICH HAS BEEN UPDATED (untested)
 
-    zpositions, coefficients = zip(*list_of_coefficients_with_z_position)
 
-    slope, offset = numpy.polyfit(zpositions, coefficients, 1)
-    #print slope
-    """
-    plt.plot(zpositions, coefficients, '.')
-    xaxis = numpy.arange(-0.21, 0, 0.025)
-    plt.plot(xaxis, slope*xaxis + offset, '-')
-    plt.axis([-0.21, -0.1 , 0.0005, 0.002])
-    plt.show()
-    """
+    for axis in range(3):
+        depths, coefficients = zip(*list_of_coefficients_with_depth[axis])
+        slope, offset = numpy.polyfit(depths, coefficients, 1)
+        final_slopes[axis].append(slope)
 
+    
     test_point_145or195 = raw_input('Choose between the 145 or 195 test point. type either "145" or "195" then hit [enter] \n ')
 
     if test_point_145or195 == '145':
         #predicted_slope at z pos of -0.1425
         predicted_slope = (slope * -0.1425) + offset
-        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))
+        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))  ####Will need to update later
     elif test_point_145or195 == '195':
         #predicted_slope at z pos of -0.1925
         predicted_slope = (slope * -0.1925) + offset
-        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))
+        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))  ####Will need to update later
     
-    gathered_slope = float(list(reader)[0][-1:][0])
+    gathered_slope = float(list(reader)[0][-1:][0]) #will no longer work
     print 'gathered_slope: ', gathered_slope
     print 'predicted_slope: ', predicted_slope
 
@@ -124,17 +156,6 @@ def run():
     print error_values[0][19]
     print 'final point error  for ' + test_point_145or195 + ' test point with ' + dvrk_or_opto_wrench + ' forces without deflection correction'
     print error_without_correction[0][19]
-    
-    """
-    dvrk_wrench = []
-    opto_wrench = []
-    
-    for row in range(2, len(reader)):
-        opto_wrench.append(reader[row][31])
-        dvrk_wrench.append(reader[row][0])
 
-    plt.plot(opto_wrench, dvrk_wrench, '.')
-    plt.show()
-    """
-
+    
 run()
