@@ -25,7 +25,7 @@ def run():
     xAtracsys = []
     tested_list = []
     for file in os.listdir("ForceTestingDataAllAxis"): #sort files
-        if file.startswith("force_testing_output"):
+        if file.startswith("force_data_collection_output"):
             if '-0.105' in file:
                 if 'x_axis' in file:
                     list_of_position_files[0][0].append(file)
