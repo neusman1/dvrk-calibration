@@ -14,20 +14,28 @@ import math
 import datetime
 
 def run():
+  
+    slopes = []
+    offsets = []
+    reader1 = list(csv.reader(open('force_testing_results_at_ ... .csv' ,"rb"), delimiter=','))#needs acual files
+    for axis in range(3):
+      slopes.append(float(reader1[axis + 1][1]))
+      offsets.append(float(reader1[axis + 1][2]))
 
+####needs changes beyond htis point to account for different axis
 
-
-  test_point_145or195 = raw_input('Choose between the 145 or 195 test point. type either "145" or "195" then hit [enter] \n ')
+    test_point_axis = raw_input('What axis was under testing?')
+    test_point_145or195 = raw_input('Choose between the 145 or 195 test point. type either "145" or "195" then hit [enter] \n ')
     if test_point_145or195 == '145':
         #predicted_slope at z pos of -0.1425
         predicted_slope = (slope * -0.1425) + offset
-        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))  ####Will need to update later
+        reader2 = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1425_2016-8-4-15-45-31.csv' ,"rb"), delimiter=','))  ####Will need to update later
     elif test_point_145or195 == '195':
         #predicted_slope at z pos of -0.1925
         predicted_slope = (slope * -0.1925) + offset
-        reader = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))  ####Will need to update later
+        reader2 = list(csv.reader(open('ForceTestingData/force_testing_output_at_z-pos_of_-0.1925_2016-8-4-15-48-11.csv' ,"rb"), delimiter=','))  ####Will need to update later
     
-    gathered_slope = float(list(reader)[0][-1:][0]) #will no longer work
+    gathered_slope = float(list(reader2)[0][-1:][0]) #will no longer work
     print 'gathered_slope: ', gathered_slope
     print 'predicted_slope: ', predicted_slope
     Force = [[],[],[]]
@@ -36,14 +44,14 @@ def run():
     calculated_absolute = [[],[0],[0]]
     error_values = [[],[],[]]
     error_without_correction = [[],[],[]]
-    for row in range(2, len(reader)):
+    for row in range(2, len(reader2)):
         for axis in range(3):
             if dvrk_or_opto_wrench == 'opto':
-                Force[axis].append(float(reader[row][(29 + axis)]))
+                Force[axis].append(float(reader2[row][(29 + axis)]))
             elif dvrk_or_opto_wrench == 'dvrk':
-                Force[axis].append(float(reader[row][(0 + axis)]))
-            Cartesian[axis].append(float(reader[row][(23 + axis)]))
-            Atracsys[axis].append(float(reader[row][(6 + axis)]))
+                Force[axis].append(float(reader2[row][(0 + axis)]))
+            Cartesian[axis].append(float(reader2[row][(23 + axis)]))
+            Atracsys[axis].append(float(reader2[row][(6 + axis)]))
     for coordinate in range(len(Force[0])):
         calculated_absolute[0].append( Cartesian[0][coordinate] - (Force[0][coordinate] * predicted_slope) )
         calculated_absolute[1].append( Cartesian[1][coordinate] ) #only modify axis under testing
