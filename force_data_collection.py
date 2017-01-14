@@ -58,8 +58,22 @@ class force_testing:
 
             axis_under_testing = raw_input("Please type the axis which is to be tested ('x', 'y', or 'z') then hit [enter]\n")
             if axis_under_testing == 'x' or axis_under_testing == 'y' or axis_under_testing == 'z': 
-                zPosition = float(raw_input("Please type the depth you would like to start testing at between -0.105 and -0.205 then hit [enter] (typically increments of .025 are used)\n"))
-                if not (zPosition <= -0.105 and zPosition >= -0.205):
+                zPositionInput = int(raw_input("Please type the depth\n"))
+                if zPositionInput == 1:
+                    zPosition = -0.105
+                elif zPositionInput == 2:
+                    zPosition = -0.130
+                elif zPositionInput == 3:
+                    zPosition = -0.155
+                elif zPositionInput == 4:
+                    zPosition = -0.180
+                elif zPositionInput == 5:
+                    zPosition = -0.205
+                elif zPositionInput == 6:
+                    zPosition = -0.1425
+                elif zPositionInput == 7:
+                    zPosition = -0.1925
+                else:
                     print "incorrect input"
                     rospy.signal_shutdown('Incorrect z position input')
             else:
@@ -72,9 +86,9 @@ class force_testing:
             
             for position_nb in range(1,21): #move to 20 positions
                 if axis_under_testing == 'x':
-                    self._robot.move(PyKDL.Vector((0.00025 * position_nb), 0.0, zPosition))
+                    self._robot.move(PyKDL.Vector((-0.00025 * position_nb), 0.0, zPosition))
                 elif axis_under_testing == 'y':
-                    self._robot.move(PyKDL.Vector(0.0, (0.00025 * position_nb), zPosition)) 
+                    self._robot.move(PyKDL.Vector(0.0, (-0.00025 * position_nb), zPosition)) 
                 elif axis_under_testing == 'z':
                     self._robot.move(PyKDL.Vector(0.0, 0.0, (-0.00025 * position_nb) + zPosition)) 
 
