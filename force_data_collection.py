@@ -144,7 +144,7 @@ class force_testing:
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.105))
 
             #write values to csv file
-            csv_file_name = 'ForceTestingDataAllAxis/force_testing_output_' + axis_under_testing +'_axis_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
+            csv_file_name = 'ForceTestingDataAllAxis/force_data_collection_output_' + axis_under_testing +'_axis_at_z-pos_of_' + str(zPosition) + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
