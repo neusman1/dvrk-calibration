@@ -24,6 +24,9 @@ set up nodes
 rosrun dvrk_robot dvrk_console_json -j console-PSM2.json
 rosrun atracsys_ros atracsys_json
 rosrun optoforce_ros optoforce_json -s /dev/ttyACM0 -j OMD-10-SE-10N.json
+
+//for the optoforce, the exact directory may need to be specified:
+rosrun optoforce_ros optoforce_json -s /dev/ttyACM0 -j /home/neusman1/catkin_ws/src/cisst-saw/sawOptoforceSensor/share/OMD-10-SE-10N.json
 ```
 
 While testing, it's good to watch the values using rostopic echo:
