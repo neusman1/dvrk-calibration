@@ -4,9 +4,11 @@
 #Author: Nick Eusman
 
 #To Do:
-# -change for new force_testing.py format
-# -no longer use optoforce data?
-# -save results in csv, and test different points in separate file?
+# -change for new force_data_collection.py format (DONE)
+# -no longer use optoforce data? (DONE)
+# -save results in csv, and test different points in separate file? (DONE)
+# -z position only needs one depth tested
+# -modify minimum force for dvrk, not using old optofoce values
 # -change evaluation to account for the fact that z axis will be uniform throughout ? (possibly dont need to change since it will be an average this way)
 
 import numpy
@@ -64,7 +66,7 @@ def run():
                     list_of_position_files[4][2].append(file)
 
 
-    print list_of_position_files
+    print list_of_position_files #debugging
 
     #calculate coeffiecint of slope between force and deflection for each file using dVRK forces
     for filetype in range(len(list_of_position_files)):
@@ -79,29 +81,36 @@ def run():
                 tested_list = []
                 for cord in range(1,len(reader)): #set atracsys, force (from dvrk), and cartesian based on axis which was tested
                     if fileaxis == 0:
-                        axisForce.append(float(reader[cord][0]))
+                        axisForce.append(float(reader[cord][0])) ##change if optoforce used
                         axisCartesian.append(float(reader[cord][23]))
                         axisAtracsys.append(float(reader[cord][6]))
                     elif fileaxis == 1:
-                        axisForce.append(float(reader[cord][1]))
+                        axisForce.append(float(reader[cord][1])) ##change if optoforce used
                         axisCartesian.append(float(reader[cord][24]))
                         axisAtracsys.append(float(reader[cord][7]))
                     elif fileaxis == 2:
-                        axisForce.append(float(reader[cord][2]))
+                        axisForce.append(float(reader[cord][2])) ##change if optoforce used
                         axisCartesian.append(float(reader[cord][25]))
                         axisAtracsys.append(float(reader[cord][8]))
                         
                 cartesian_v_atracsys_diff = [ a - b for a,b in zip( axisCartesian,  axisAtracsys) ]
                 untested_list = zip(axisForce, cartesian_v_atracsys_diff)
-                for cord in untested_list: #test if point has more than minimal force, if does, add to new list
-                    if cord[0] > 0.08:
+                for cord in untested_list: #test if point has more than minimal force, if does, add to tested list
+                    if fileaxis == 0:
+                        if cord[0] > 1.3: ##change if optoforce used
+                        tested_list.append(cord)
+                    elif fileaxis == 1:
+                        if cord[0] > 1.8: ##change if optoforce used
+                        tested_list.append(cord)
+                    elif fileaxis == 2:
+                        if cord[0] > 0.4: ##change if optoforce used
                         tested_list.append(cord)
                 force_for_plotting, diff_for_plotting = zip(*tested_list)
                 force_for_plotting = list(force_for_plotting)
                 diff_for_plotting = list(diff_for_plotting)
-                coef, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1) # save force vs deflection graphs
+                coef, intercept = numpy.polyfit( force_for_plotting, diff_for_plotting, 1) 
 
-                list_of_coefficients_with_depth[fileaxis].append([ round((-0.105 -( 0.025 * filetype)), 5), coef])  
+                list_of_coefficients_with_depth[fileaxis].append([ round((-0.105 -( 0.025 * filetype)), 5), coef])  # save force vs deflection graphs
 
 
     for axis in range(3):
@@ -124,6 +133,5 @@ def run():
             writer.writerow(["Z",str(final_offsets[row][0]),str(final_offsets[row][1])])
                 
     
-
 
 run()
