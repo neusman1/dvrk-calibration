@@ -98,13 +98,13 @@ def run():
                 for cord in untested_list: #test if point has more than minimal force, if does, add to tested list
                     if fileaxis == 0:
                         if cord[0] > 1.3: ##change if optoforce used
-                        tested_list.append(cord)
+                            tested_list.append(cord)
                     elif fileaxis == 1:
                         if cord[0] > 1.8: ##change if optoforce used
-                        tested_list.append(cord)
+                            tested_list.append(cord)
                     elif fileaxis == 2:
                         if cord[0] > 0.4: ##change if optoforce used
-                        tested_list.append(cord)
+                            tested_list.append(cord)
                 force_for_plotting, diff_for_plotting = zip(*tested_list)
                 force_for_plotting = list(force_for_plotting)
                 diff_for_plotting = list(diff_for_plotting)
