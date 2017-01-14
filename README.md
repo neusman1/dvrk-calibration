@@ -33,7 +33,7 @@ While testing, it's good to watch the values using rostopic echo:
 ```sh
 rostopic echo /dvrk/PSM3/wrench_body_current
 rostopic echo /atracsys/fiducials 
-rostop echo /optoforce/wrench
+rostopic echo /optoforce/wrench
 ```
 
 
