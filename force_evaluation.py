@@ -21,8 +21,8 @@ import datetime
 def run():
     list_of_position_files = [ [ [], [], [] ], [ [], [], [] ], [ [], [], [] ], [ [], [], [] ], [ [], [], [] ] ] #list of all files sorted by their five test points and their three axis
     list_of_coefficients_with_depth = [ [], [], [] ]
-    final_slopes = [ [], [], [] ]
-    final_offsets = [ [], [], [] ]
+    final_slopes = []
+    final_offsets = []
     zforce = []
     xCartesian = []
     xAtracsys = []
@@ -66,8 +66,6 @@ def run():
                     list_of_position_files[4][2].append(file)
 
 
-    print list_of_position_files #debugging
-
     #calculate coeffiecint of slope between force and deflection for each file using dVRK forces
     for filetype in range(len(list_of_position_files)):
         for fileaxis in range(len(list_of_position_files[filetype])):
@@ -97,14 +95,17 @@ def run():
                 untested_list = zip(axisForce, cartesian_v_atracsys_diff)
                 for cord in untested_list: #test if point has more than minimal force, if does, add to tested list
                     if fileaxis == 0:
-                        if cord[0] > 1.3: ##change if optoforce used
+                        if cord[0] > 1.3 or cord[0] < -1.3: ##change if optoforce used
                             tested_list.append(cord)
                     elif fileaxis == 1:
-                        if cord[0] > 1.8: ##change if optoforce used
+                        if cord[0] > 1.8 or cord[0] < -1.8: ##change if optoforce used
                             tested_list.append(cord)
                     elif fileaxis == 2:
-                        if cord[0] > 0.4: ##change if optoforce used
+                        if cord[0] > 0.4 or cord[0] < -.4: ##change if optoforce used
                             tested_list.append(cord)
+
+                print list_of_position_files[filetype][fileaxis][filename]
+                print tested_list
                 force_for_plotting, diff_for_plotting = zip(*tested_list)
                 force_for_plotting = list(force_for_plotting)
                 diff_for_plotting = list(diff_for_plotting)
@@ -116,21 +117,23 @@ def run():
     for axis in range(3):
         depths, coefficients = zip(*list_of_coefficients_with_depth[axis]) #save final depth vs coefficient (of force and deflection) graphs's slope and offset
         slope, offset = numpy.polyfit(depths, coefficients, 1)
-        final_slopes[axis].append(slope)
-        final_offsets[axis].append(offset)
+        final_slopes.append(slope)
+        final_offsets.append(offset)
 
     csv_file_name = 'ForceTestingDataAllAxis/force_testing_results_at_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
     print "\n Values will be saved in: ", csv_file_name
     f = open(csv_file_name, 'wb')
     writer = csv.writer(f)
     writer.writerow(["Axis","Slope","Offset"])
-    for row in range(len(current_atracsys_position)):
+    print final_slopes
+    print final_offsets
+    for row in range(len(final_offsets)):
         if row == 0:
-            writer.writerow(["X",str(final_offsets[row][0]),str(final_offsets[row][1])])
+            writer.writerow(["X",str(final_slopes[row]),str(final_offsets[row])])
         elif row == 1:
-            writer.writerow(["Y",str(final_offsets[row][0]),str(final_offsets[row][1])])
+            writer.writerow(["Y",str(final_slopes[row]),str(final_offsets[row])])
         elif row == 2:
-            writer.writerow(["Z",str(final_offsets[row][0]),str(final_offsets[row][1])])
+            writer.writerow(["Z",str(final_slopes[row]),str(final_offsets[row])])
                 
     
 
