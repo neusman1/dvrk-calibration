@@ -59,6 +59,12 @@ while not rospy.is_shutdown():
 
 ### data interpretation
 ```sh
-python predictive_linear_fit.py 
+python force_evaluation.py
 ```
-The above program will gather all data files in the ForceTestingData directory and create a predictive linear model. It can return the corrected and uncorrected error of two diferent test points with either force data from the dvrk or optotrac
+The above program will gather all data files in the ForceTestingData directory and create a predictive linear model. 
+
+### verify created model against test points
+```sh
+python force_test_points.py
+```
+The model can return the corrected and uncorrected error of 6 diferent test points across 3 axis, 2 depths
