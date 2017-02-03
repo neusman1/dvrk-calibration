@@ -48,17 +48,17 @@ Run the data cllection in shell as follows
 ```sh
  python force_data_collection.py PSM3
 ```
-Usualy the data collection is run at 5 depths (z positions), for the x and y axis, and one depth for hte z axis. Data is  gathered 10 times at each depth. It is suggested that the transfomration matrix is retaken at least once durring data collection
+Usualy the data collection is run at 5 depths (z positions), for the x, y and z axis. Data is gathered 10 times at each depth with forces being applied to each of three axis. It is suggested that the transfomration matrix is retaken at least once durring data collection
 
-to modify the z position, change the variable zPosition on line 78. Generally a term between -0.105 and -0.205 is used
-```python
-current_joint_positions = []
-zPosition = -0.105  #Default is -0.105
-while not rospy.is_shutdown():
-```
 
 ### data interpretation
 ```sh
-python predictive_linear_fit.py 
+python force_evaluation.py
 ```
-The above program will gather all data files in the ForceTestingData directory and create a predictive linear model. It can return the corrected and uncorrected error of two diferent test points with either force data from the dvrk or optotrac
+The above program will gather all data files in the ForceTestingData directory and create a predictive linear model. 
+
+### verify created model against test points
+```sh
+python force_test_points.py
+```
+The model can return the corrected and uncorrected error of 6 diferent test points across 3 axis, 2 depths
