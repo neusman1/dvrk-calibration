@@ -17,6 +17,8 @@ def run():
     k_sums = [0.0, 0.0, 0.0]
     counter = 0
     files_for_evaluation = []
+    threshold = [0.2, 0.3, 0.3]
+    skips = [0,0,0]
     for file in os.listdir("ForceTestingDataAllAxis"): #sort files
         if file.startswith("force_fixed_point_output"):
             files_for_evaluation.append(file)
@@ -28,19 +30,23 @@ def run():
 
     for filenumber in range(len(files_for_evaluation)):
         reader = list(csv.reader(open('ForceTestingDataAllAxis/' +files_for_evaluation[filenumber],"rb"), delimiter=','))
-        for row in range(1,len(reader)):
+        print 'loading: ', files_for_evaluation[filenumber]
+        for row in range(21,len(reader)):
             k_values = [0.0,0.0,0.0]
             for joint in range(3):
-                k = 0
-                if joint == 0 or joint == 1:
-                    k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][5]) * float(reader[row][joint + 10])))
-                elif joint == 2:
-                    k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][joint + 10])))
-                k_values[joint] = k
-                k_sums[joint] += k
-            writer.writerow([float(reader[row][5]), k_values[0], k_values[1],k_values[2] ])
+                if not((float(reader[row][joint + 10]) < threshold[joint]) and (float(reader[row][joint + 10]) > -threshold[joint])):
+                    k = 0
+                    if joint == 0 or joint == 1:
+                        k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][5]) * float(reader[row][joint + 10])))
+                    elif joint == 2:
+                        k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][joint + 10])))
+                    k_values[joint] = k
+                    k_sums[joint] += k
+                else:
+                    skips[joint] += 1    
+                writer.writerow([float(reader[row][5]), k_values[0], k_values[1],k_values[2] ])
             counter += 1
-    print 'k values: ', (k_sums[0] / counter), (k_sums[1] / counter), (k_sums[2] / counter) 
+    print 'k values: ', (k_sums[0] / (counter - skips[0])), (k_sums[1] / (counter - skips[1])), (k_sums[2] / (counter - skips[2])) 
 
 
     
