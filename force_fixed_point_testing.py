@@ -60,7 +60,7 @@ class force_testing:
                 self._robot.dmove(PyKDL.Vector(0.007, 0.0, 0.0))
                 if(xaxis == 1):
                     self._robot.dmove(PyKDL.Vector(0.007, 0.0, 0.0))
-                time.sleep(1)
+                time.sleep(2)
                 self.collect_data()
             self._robot.move(zero_position)
             print "finished linearly testing x axis"
@@ -73,11 +73,12 @@ class force_testing:
                 self._robot.dmove(PyKDL.Vector(0.0, 0.007, 0.0))
                 if(yaxis == 1):
                     self._robot.dmove(PyKDL.Vector(0.0, 0.007, 0.0))
-                time.sleep(1)
+                time.sleep(2)
                 self.collect_data()
             self._robot.move(zero_position)
             print "finished linearly testing y axis"
-            
+
+            """
             #linearly test z axis
             self._robot.dmove(PyKDL.Vector(0.0, 0.0, -0.004,))
             time.sleep(1)
@@ -86,18 +87,18 @@ class force_testing:
                 self._robot.dmove(PyKDL.Vector(0.0, 0.0, 0.002))
                 if(zaxis == 1):
                     self._robot.dmove(PyKDL.Vector(0.0, 0.0, 0.002))
-                time.sleep(1)
+                time.sleep(2)
                 self.collect_data()
             self._robot.move(zero_position)
             print "finished linearly testing z axis"
-            
+            """
             
             #test 3 dimentional vectors in cube shape surrounding center point
             for xaxis in [-0.007, 0.007]:
                 for yaxis in [-0.007, 0.007]:
-                    for zaxis in [-0.002, 0.002]:
+                    for zaxis in [-0.001, 0.001]:
                         self._robot.dmove(PyKDL.Vector(xaxis, yaxis, zaxis))
-                        time.sleep(1)
+                        time.sleep(2)
                         self.collect_data()
                         self._robot.move(zero_position)
                         time.sleep(.3)
