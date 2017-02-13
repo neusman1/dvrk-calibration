@@ -32,14 +32,14 @@ def run():
         reader = list(csv.reader(open('ForceTestingDataAllAxis/' +files_for_evaluation[filenumber],"rb"), delimiter=','))
         print 'loading: ', files_for_evaluation[filenumber]
         for row in range(21,len(reader)):
-            k_values = [0.0,0.0,0.0]
+            k_values = [0.0, 0.0, 0.0]
             for joint in range(3):
                 if not((float(reader[row][joint + 10]) < threshold[joint]) and (float(reader[row][joint + 10]) > -threshold[joint])):
                     k = 0
                     if joint == 0 or joint == 1:
-                        k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][5]) * float(reader[row][joint + 10])))
+                        k =(( float(reader[row][joint + 3]) - float(reader[row][joint]) ) / ( float(reader[row][joint + 10])))
                     elif joint == 2:
-                        k =(( float(reader[row][joint]) - float(reader[row][joint + 3]) ) / ( float(reader[row][joint + 10])))
+                        k =(( float(reader[row][joint + 3]) - float(reader[row][joint]) ) / ( float(reader[row][joint + 10])))
                     k_values[joint] = k
                     k_sums[joint] += k
                 else:
