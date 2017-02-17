@@ -34,8 +34,17 @@ class force_testing:
         
         while not rospy.is_shutdown():
             jointUnderTesting = 0; #changable to 0, 1,
-            dX = 0.0005
+            dX = -0.00025
             totalSample = 20
+            self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
+            
+            self._robot.move(PyKDL.Vector(0.0, 0.01, -0.09))
+            self._robot.move(PyKDL.Vector(0.0, -0.01, -0.09))
+            self._robot.move(PyKDL.Vector(0.0, 0.01, -0.09))
+            self._robot.move(PyKDL.Vector(0.0, -0.01, -0.09))
+            time.sleep(1)
+            print 'effort: ', self._robot.get_current_joint_effort()[0]
+            
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
             time.sleep(.3)
             raw_input('when surface is in place, hit [enter]')
@@ -65,14 +74,14 @@ class force_testing:
                     depth_index.append(depthIndex)
                     print 'position recorded: ', position_nb
                     time.sleep(.5) 
-                    if abs(avg_current_joint_effort[position_nb - 1]) > 1.2:
+                    if abs(avg_current_joint_effort[position_nb - 1]) > 1.5:
                         isEffortThreshold = True
                     else:
                         if jointUnderTesting == 0:
                             self._robot.move(PyKDL.Vector((-dX * position_nb), 0.0, depth))
                         elif jointUnderTesting == 1:
                             self._robot.move(PyKDL.Vector( 0.0, (-dX * position_nb), depth))
-                        time.sleep(1)
+                        time.sleep(.5)
                     
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
 

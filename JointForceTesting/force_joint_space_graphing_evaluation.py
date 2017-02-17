@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-#Created on February 13, 2017
+#Created on February 17, 2017
 #Author: Nick Eusman
 
 #To Do:
 # -allow for input from joint 1
 # -figure out 3D plot as surface instead of wireframe
 
-
+import time
 import numpy
 import csv
 import os
@@ -15,11 +15,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 #from matplotlib import cm
 import math
+import datetime
 
 def run():
 
     files = [ [], [] ]
     effortThreshold = 0.1
+    zeroEffort = .08
 
     for document in os.listdir("ForceTestingDataJointSpace"):
         if document.startswith("force_joint_space_data_collection"):
@@ -30,11 +32,16 @@ def run():
 
 
     for documentType in range(len(files)):
-        allSlopes = []
-        allOffsets = []
-        allDepths = []
-        for document in range(len(files[documentType])):
+        As = []
+        Bs = []
+        Cs = []
+        Ds = []
 
+        for document in range(len(files[documentType])):
+            allSlopes = []
+            allOffsets = []
+            allDepths = []
+            
             effortsOverThreshold = []
             dX = []
             jointDepths = []
@@ -62,10 +69,11 @@ def run():
                 #save all values which are above threshold effort
                 thresholdPosition = float(reader[startIndex][2])
                 allDepths.append(float(reader[startIndex][1]))
+
                 for row in range(endIndex, startIndex -1, -1):
-                    if abs(float(reader[row][3])) > effortThreshold:
-                        effortsOverThreshold[depth].append(abs(float(reader[row][3])))
-                        dX[depth].append( thresholdPosition - float(reader[row][2]) )
+                    if abs( float(reader[row][3]) - zeroEffort) > effortThreshold:
+                        effortsOverThreshold[depth].append(float(reader[row][3]) - zeroEffort)
+                        dX[depth].append(float(reader[row][2]) - thresholdPosition)
                         jointDepths[depth].append(float(reader[row][1]))
 
                     else:
@@ -83,16 +91,36 @@ def run():
                 plt.plot(effortsOverThreshold[depth], dX[depth], '-')
             plt.show()
 
-
+            #plt.plot(allDepths, allOffsets, '.')
+            #plt.show()
+            
             #plot slopes and depths
-            plt.plot(allSlopes, allDepths, '.')
+            A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
+            print A,B,C,D
+            As.append(A)
+            Bs.append(B)
+            Cs.append(C)
+            Ds.append(D)
+            plt.plot(allDepths, allSlopes, '.')
+            plt.show()
+            """
+            #allDepths2 = list(numpy.power(allDepths,  1.0/3.0))
+            #allSlopes2 = list(numpy.power(allSlopes, 1.0/3.0))
+            allSlopes2 = list(numpy.power(allSlopes, -1))
+            plt.plot(allDepths, allSlopes2, '.')
             plt.show()
 
-            allDepths2 = list(numpy.power(allDepths, .25))
-            plt.plot(allSlopes, allDepths2, '.')
-            plt.show()
-
-
+        csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output' + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
+        print "\n Values will be saved in: ", csv_file_name
+        f = open(csv_file_name, 'wb')
+        writer = csv.writer(f)
+        avgA = math.sum(As)/len(As)
+        avgB = math.sum(Bs)/len(Bs)
+        avgC = math.sum(Cs)/len(Cs)
+        avgD = math.sum(Ds)/len(Ds)
+        writer.writerow([ avgA, avgB, avgC, avgD ])
+        """
+        """
         #3D graphing
 
         totalEffort = []
@@ -114,6 +142,6 @@ def run():
 
         ax.plot_wireframe( totalEffort, totalDX, totalDepth)
         plt.show()
-
+        """
 
 run()
