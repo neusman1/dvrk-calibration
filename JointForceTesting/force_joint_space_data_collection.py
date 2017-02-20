@@ -33,17 +33,28 @@ class force_testing:
         depth_index = []
         
         while not rospy.is_shutdown():
-            jointUnderTesting = 0; #changable to 0, 1,
-            dX = -0.00025
+            jointUnderTesting = 1; #changable to 0, 1,
+            dX = -0.00025  # for joint 0:  negative => leftward, positive => rightward   ## for joint 1: positive => inward, negative => outward
             totalSample = 20
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
-            
-            self._robot.move(PyKDL.Vector(0.0, 0.01, -0.09))
-            self._robot.move(PyKDL.Vector(0.0, -0.01, -0.09))
-            self._robot.move(PyKDL.Vector(0.0, 0.01, -0.09))
-            self._robot.move(PyKDL.Vector(0.0, -0.01, -0.09))
-            time.sleep(1)
-            print 'effort: ', self._robot.get_current_joint_effort()[0]
+            self._robot.move(PyKDL.Vector(0.0, 0.0, -0.15))
+            raw_input("hit [enter] when the robot is able to move")
+            if jointUnderTesting == 0:
+                self._robot.move(PyKDL.Vector(0.0,  0.01, -0.15))
+                self._robot.move(PyKDL.Vector(0.0, -0.01, -0.15))
+                self._robot.move(PyKDL.Vector(0.0,  0.01, -0.15))
+                self._robot.move(PyKDL.Vector(0.0, -0.01, -0.15))
+                self._robot.move(PyKDL.Vector(0.0, 0.0, -0.15))
+                time.sleep(5)
+                zeroEffort = self._robot.get_current_joint_effort()[0]
+            elif jointUnderTesting == 1:
+                self._robot.move(PyKDL.Vector( 0.01, 0.0, -0.15))
+                self._robot.move(PyKDL.Vector(-0.01, 0.0, -0.15))
+                self._robot.move(PyKDL.Vector( 0.01, 0.0, -0.15))
+                self._robot.move(PyKDL.Vector(-0.01, 0.0, -0.15))
+                self._robot.move(PyKDL.Vector(0.0, 0.0, -0.15))
+                time.sleep(5)
+                zeroEffort = self._robot.get_current_joint_effort()[1]
             
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
             time.sleep(.3)
@@ -62,11 +73,15 @@ class force_testing:
                     current_joint_effort = 0.0
                     joint_depth = 0.0
                     for sample_nb in range(totalSample): #take 20 samples at each position
+                        if jointUnderTesting == 0:
+                            current_joint_effort += self._robot.get_current_joint_effort()[0]
+                            current_joint_positions += self._robot.get_current_joint_position()[0]
+                            joint_depth += self._robot.get_current_joint_position()[2]
+                        elif jointUnderTesting == 1:
+                            current_joint_effort += self._robot.get_current_joint_effort()[1]
+                            current_joint_positions += self._robot.get_current_joint_position()[1]
+                            joint_depth += self._robot.get_current_joint_position()[2]
                         
-                        current_joint_effort += self._robot.get_current_joint_effort()[0]
-                        current_joint_positions += self._robot.get_current_joint_position()[0]
-                        joint_depth += self._robot.get_current_joint_position()[2]
-                                                        
                         time.sleep(.02) #sleep after each sample
                     avg_current_joint_positions.append( current_joint_positions / float(totalSample) )
                     avg_current_joint_effort.append( current_joint_effort / float(totalSample) )
@@ -90,12 +105,13 @@ class force_testing:
             print "\n Values will be saved in: ", csv_file_name
             f = open(csv_file_name, 'wb')
             writer = csv.writer(f)
-            writer.writerow([ "depth index", "current depth", "current Joint positions", "current joint effort" ])
+            writer.writerow([ "depth index", "current depth", "current Joint positions", "current joint effort", "zero effort" ])
             for row in range(len(avg_current_joint_positions)):         #column number for data in csv file
                 writer.writerow([depth_index[row],
                                  avg_depth[row],
                                  avg_current_joint_positions[row],
-                                 avg_current_joint_effort[row] ])
+                                 avg_current_joint_effort[row],
+                                 zeroEffort ])
                                  
 
             rospy.signal_shutdown('Finished Task')
