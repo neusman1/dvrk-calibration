@@ -20,8 +20,7 @@ import datetime
 def run():
 
     files = [ [], [] ]
-    effortThreshold = 0.1
-    zeroEffort = .08
+    effortThreshold = [0.1, 0.25]
 
     for document in os.listdir("ForceTestingDataJointSpace"):
         if document.startswith("force_joint_space_data_collection"):
@@ -32,15 +31,12 @@ def run():
 
 
     for documentType in range(len(files)):
-        As = []
-        Bs = []
-        Cs = []
-        Ds = []
 
+        allSlopes = []
+        allOffsets = []
+        allDepths = []
+        
         for document in range(len(files[documentType])):
-            allSlopes = []
-            allOffsets = []
-            allDepths = []
             
             effortsOverThreshold = []
             dX = []
@@ -71,8 +67,8 @@ def run():
                 allDepths.append(float(reader[startIndex][1]))
 
                 for row in range(endIndex, startIndex -1, -1):
-                    if abs( float(reader[row][3]) - zeroEffort) > effortThreshold:
-                        effortsOverThreshold[depth].append(float(reader[row][3]) - zeroEffort)
+                    if abs( float(reader[row][3]) - float(reader[row][4])) > effortThreshold[documentType]:
+                        effortsOverThreshold[depth].append(float(reader[row][3]) - float(reader[row][4]))
                         dX[depth].append(float(reader[row][2]) - thresholdPosition)
                         jointDepths[depth].append(float(reader[row][1]))
 
@@ -91,35 +87,19 @@ def run():
                 plt.plot(effortsOverThreshold[depth], dX[depth], '-')
             plt.show()
 
-            #plt.plot(allDepths, allOffsets, '.')
-            #plt.show()
             
-            #plot slopes and depths
-            A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
-            print A,B,C,D
-            As.append(A)
-            Bs.append(B)
-            Cs.append(C)
-            Ds.append(D)
-            plt.plot(allDepths, allSlopes, '.')
-            plt.show()
-            """
-            #allDepths2 = list(numpy.power(allDepths,  1.0/3.0))
-            #allSlopes2 = list(numpy.power(allSlopes, 1.0/3.0))
-            allSlopes2 = list(numpy.power(allSlopes, -1))
-            plt.plot(allDepths, allSlopes2, '.')
-            plt.show()
-
-        csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output' + '_' + ('-'.join(str(x) for x in list(tuple(datetime.datetime.now().timetuple())[:6]))) + '.csv'
+        #plot slopes and depths
+        A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
+        print A,B,C,D
+        plt.plot(allDepths, allSlopes, '.')
+        plt.show()
+        
+        csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_' + str(documentType) +  '.csv'
         print "\n Values will be saved in: ", csv_file_name
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
-        avgA = math.sum(As)/len(As)
-        avgB = math.sum(Bs)/len(Bs)
-        avgC = math.sum(Cs)/len(Cs)
-        avgD = math.sum(Ds)/len(Ds)
-        writer.writerow([ avgA, avgB, avgC, avgD ])
-        """
+        writer.writerow([ A, B, C, D ])
+
         """
         #3D graphing
 
