@@ -32,10 +32,12 @@ class force_testing:
         avg_depth = []
         depth_index = []
         
+        self._robot.move_joint(numpy.array([0.0,0.0,0.1,0.0,0.0,0.0,0.0]))
         while not rospy.is_shutdown():
-            jointUnderTesting = 1; #changable to 0, 1,
-            dX = -0.00025  # for joint 0:  negative => leftward, positive => rightward   ## for joint 1: positive => inward, negative => outward
+            jointUnderTesting = 0; #changable to 0, 1,
+            dX = 0.00025  # for joint 0:  negative => leftward, positive => rightward   ## for joint 1: positive => inward, negative => outward
             totalSample = 20
+
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.09))
             self._robot.move(PyKDL.Vector(0.0, 0.0, -0.15))
             raw_input("hit [enter] when the robot is able to move")
@@ -83,13 +85,14 @@ class force_testing:
                             joint_depth += self._robot.get_current_joint_position()[2]
                         
                         time.sleep(.02) #sleep after each sample
+                    avgEffort = current_joint_effort / float(totalSample)
                     avg_current_joint_positions.append( current_joint_positions / float(totalSample) )
-                    avg_current_joint_effort.append( current_joint_effort / float(totalSample) )
+                    avg_current_joint_effort.append( avgEffort )
                     avg_depth.append( joint_depth / float(totalSample) )
                     depth_index.append(depthIndex)
                     print 'position recorded: ', position_nb
                     time.sleep(.5) 
-                    if abs(avg_current_joint_effort[position_nb - 1]) > 1.5:
+                    if abs(avgEffort) > 1.5: #check if above threshold effort
                         isEffortThreshold = True
                     else:
                         if jointUnderTesting == 0:
