@@ -20,7 +20,7 @@ import datetime
 def run():
 
     files = [ [], [] ]
-    effortThreshold = [0.1, 0.25]
+    effortThreshold = [0.1, 0.2]
 
     for document in os.listdir("ForceTestingDataJointSpace"):
         if document.startswith("force_joint_space_data_collection"):
@@ -67,7 +67,7 @@ def run():
                 allDepths.append(float(reader[startIndex][1]))
 
                 for row in range(endIndex, startIndex -1, -1):
-                    if abs( float(reader[row][3]) - float(reader[row][4])) > effortThreshold[documentType]:
+                    if (abs( float(reader[row][3]) )- abs(float(reader[row][4]))) > effortThreshold[documentType]:
                         effortsOverThreshold[depth].append(float(reader[row][3]) - float(reader[row][4]))
                         dX[depth].append(float(reader[row][2]) - thresholdPosition)
                         jointDepths[depth].append(float(reader[row][1]))
@@ -85,13 +85,19 @@ def run():
                 allSlopes.append(slope)
                 allOffsets.append(offset)
                 plt.plot(effortsOverThreshold[depth], dX[depth], '-')
+            plt.set_xlabel('Force')
+            plt.set_ylabel('Deflection')
             plt.show()
 
             
         #plot slopes and depths
         A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
         print A,B,C,D
+        xaxis = numpy.arange(-0.23, -0.08, 0.005)
+        plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
         plt.plot(allDepths, allSlopes, '.')
+        plt.set_xlabel('Depth')
+        plt.set_ylabel('Slope')
         plt.show()
         
         csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_' + str(documentType) +  '.csv'
