@@ -15,15 +15,15 @@ import math
 def run():
 
     files = [ [], [] ]
-    effortThreshold = 0.1
+    effortThreshold = [0.1, 0.2]
     reader2 = list(csv.reader(open('ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_0.csv',"rb"), delimiter=','))
     A = float(reader2[0][0])
     B = float(reader2[0][1])
     C = float(reader2[0][2])
     D = float(reader2[0][3])
 
-    for document in os.listdir("ForceTestingDataJointSpace/olderData"):
-    #for document in os.listdir("ForceTestingDataJointSpace/"):
+    #for document in os.listdir("ForceTestingDataJointSpace/olderData"):
+    for document in os.listdir("ForceTestingDataJointSpace/"):
         if document.startswith("force_joint_space_data_collection"):
             if 'joint_0' in document:
                 files[0].append(document)
@@ -47,8 +47,8 @@ def run():
             avgExpcDiff = []
             avgCalcDiff = []
             
-            reader = list(csv.reader(open('ForceTestingDataJointSpace/olderData/' + files[documentType][document],"rb"), delimiter=','))
-            #reader = list(csv.reader(open('ForceTestingDataJointSpace/' + files[documentType][document],"rb"), delimiter=','))
+            #reader = list(csv.reader(open('ForceTestingDataJointSpace/olderData/' + files[documentType][document],"rb"), delimiter=','))
+            reader = list(csv.reader(open('ForceTestingDataJointSpace/' + files[documentType][document],"rb"), delimiter=','))
 
             for depth in range(14):
                 effortsOverThreshold.append([])
@@ -78,12 +78,12 @@ def run():
 
                 coef = (A * (thresholdJointDepth**3)) + (B * ( thresholdJointDepth**2)) + (C * thresholdJointDepth) + D
                 for row in range(endIndex, startIndex -1, -1):
-                    if abs( float(reader[row][3]) - 0.08) > effortThreshold:
+                    if abs( float(reader[row][3]) - 0.08) > effortThreshold[documentType]:
                         effortsOverThreshold[depth].append(float(reader[row][3]) - 0.08)
                         expectedPosDiff[depth].append(float(reader[row][2]) - thresholdPosition)
                         jointDepths[depth].append(float(reader[row][1]))
                         
-                        dif = coef * (float(reader[row][3]) - 0.08)
+                        dif = coef * (float(reader[row][3]) - float(reader[row][4]))
                         calcActuPos = float(reader[row][2]) - dif
                         calculatedPosDiff[depth].append(calcActuPos - thresholdPosition)
 
@@ -103,11 +103,11 @@ def run():
                 avgExpcDiff.append( sum(expectedPosDiff[depth]) / len(expectedPosDiff[depth]))
                 avgCalcDiff.append( sum(calculatedPosDiff[depth]) / len(calculatedPosDiff[depth]))
 
-                print "avgExpcDiff @ depth " + str(depth) + ": ", avgExpcDiff[depth]
-                print "avgCalcDiff @ depth " + str(depth) + ": ", avgCalcDiff[depth]
+                print "avgExpcDiff @ depth " + str(depth) + ": ", ( avgExpcDiff[depth] * 180 / math.pi )
+                print "avgCalcDiff @ depth " + str(depth) + ": ", ( avgCalcDiff[depth] * 180 / math.pi )
 
-            print "avgExpcDiff: ", sum(avgExpcDiff)/len(avgExpcDiff)
-            print "avgCalcDiff: ", sum(avgCalcDiff)/len(avgCalcDiff)
+            print "avgExpcDiff: ", ((sum(avgExpcDiff)/len(avgExpcDiff))* 180 / math.pi )
+            print "avgCalcDiff: ", ((sum(avgCalcDiff)/len(avgCalcDiff))* 180 / math.pi )
             raw_input("[enter] to proceed")
 
 run()
