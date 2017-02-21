@@ -85,19 +85,19 @@ def run():
                 allSlopes.append(slope)
                 allOffsets.append(offset)
                 plt.plot(effortsOverThreshold[depth], dX[depth], '-')
-            plt.set_xlabel('Force')
-            plt.set_ylabel('Deflection')
+            #plt.set_xlabel('Force')
+            #plt.set_ylabel('Deflection')
             plt.show()
 
             
         #plot slopes and depths
         A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
         print A,B,C,D
-        xaxis = numpy.arange(-0.23, -0.08, 0.005)
+        xaxis = numpy.arange(0.08, 0.23, 0.005)
         plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
         plt.plot(allDepths, allSlopes, '.')
-        plt.set_xlabel('Depth')
-        plt.set_ylabel('Slope')
+        #plt.set_xlabel('Depth')
+        #plt.set_ylabel('Slope')
         plt.show()
         
         csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_' + str(documentType) +  '.csv'
