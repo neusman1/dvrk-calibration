@@ -13,6 +13,7 @@ import csv
 import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.backends.backend_pdf import PdfPages
 #from matplotlib import cm
 import math
 import datetime
@@ -21,6 +22,8 @@ def run():
 
     files = [ [], [] ]
     effortThreshold = [0.1, 0.2]
+    slop = 0.003125
+    graphPages = PdfPages('FinalGraphs.pdf')
 
     for document in os.listdir("ForceTestingDataJointSpace"):
         if document.startswith("force_joint_space_data_collection"):
@@ -87,19 +90,39 @@ def run():
                 plt.plot(effortsOverThreshold[depth], dX[depth], '-')
             #plt.set_xlabel('Force')
             #plt.set_ylabel('Deflection')
-            plt.show()
+        plt.savefig(graphPages, format = 'pdf')
+        plt.show()
+        
 
+        xaxis = numpy.arange(0.0, 1.5, .05)
+        for depth in range(14):
+            plt.plot(xaxis, (xaxis*allSlopes[depth]) + slop, '-')
+        xaxis = numpy.arange(-1.5, 0.0, .05)
+        for depth in range(14,28):
+            plt.plot(xaxis, (xaxis*allSlopes[depth]) - slop, '-')
+        plt.savefig(graphPages, format = 'pdf')
+        plt.show()
+            
             
         #plot slopes and depths
         A,B,C,D =numpy.polyfit(allDepths, allSlopes, 3)
         print A,B,C,D
         xaxis = numpy.arange(0.08, 0.23, 0.005)
         plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
+        A,B,C,D =numpy.polyfit(allDepths[0:14], allSlopes[0:14], 3)
+        print A,B,C,D
+
+        plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
+        A,B,C,D =numpy.polyfit(allDepths[14:28], allSlopes[14:28], 3)
+        print A,B,C,D
+        plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
+        
         plt.plot(allDepths, allSlopes, '.')
         #plt.set_xlabel('Depth')
         #plt.set_ylabel('Slope')
+        plt.savefig(graphPages, format = 'pdf')
         plt.show()
-        
+        A,B,C,D = numpy.polyfit(allDepths, allSlopes, 3)
         csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_' + str(documentType) +  '.csv'
         print "\n Values will be saved in: ", csv_file_name
         f = open(csv_file_name, 'wb')
@@ -129,5 +152,6 @@ def run():
         ax.plot_wireframe( totalEffort, totalDX, totalDepth)
         plt.show()
         """
-
+    graphPages.close()
+    
 run()
