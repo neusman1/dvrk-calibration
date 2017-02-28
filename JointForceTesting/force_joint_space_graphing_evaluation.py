@@ -23,7 +23,14 @@ def run():
     files = [ [], [] ]
     effortThreshold = [0.1, 0.2]
     slop = 0.003125
-    graphPages = PdfPages('FinalGraphs.pdf')
+    Joint1Data = PdfPages('Joint1Data.pdf')
+    Joint1Shifted = PdfPages('Joint1Shifted.pdf')
+    Joint1Stiffness = PdfPages('Joint1Stiffness.pdf')
+    Joint2Data = PdfPages('Joint2Data.pdf')
+    Joint2Shifted = PdfPages('Joint2Shifted.pdf')
+    Joint2Stiffness = PdfPages('Joint2Stiffness.pdf')
+    
+    
 
     for document in os.listdir("ForceTestingDataJointSpace"):
         if document.startswith("force_joint_space_data_collection"):
@@ -47,6 +54,8 @@ def run():
             reader = list(csv.reader(open('ForceTestingDataJointSpace/' + files[documentType][document],"rb"), delimiter=','))
 
             for depth in range(14):
+                jointDepth = .09 + ( depth * .01)
+                
                 effortsOverThreshold.append([])
                 dX.append([])
                 jointDepths.append([])
@@ -87,20 +96,31 @@ def run():
                 slope, offset = numpy.polyfit(effortsOverThreshold[depth], dX[depth], 1)
                 allSlopes.append(slope)
                 allOffsets.append(offset)
-                plt.plot(effortsOverThreshold[depth], dX[depth], '-')
+                plt.plot(effortsOverThreshold[depth], dX[depth], '-', label = ("Depth" + str(jointDepth)))
             #plt.set_xlabel('Force')
             #plt.set_ylabel('Deflection')
-        plt.savefig(graphPages, format = 'pdf')
+        plt.xlabel('Joint Effort, N-m')
+        plt.ylabel('Joint Displacement, radians')
+        #plt.legend(bbox_to_anchor=(1, 1), loc=2, borderaxespad=0.)
+        if documentType == 0:
+            plt.savefig(Joint1Data, format = 'pdf')
+        elif documentType == 1:
+            plt.savefig(Joint2Data, format = 'pdf')
         plt.show()
         
-
-        xaxis = numpy.arange(0.0, 1.5, .05)
+        
+        xaxis = numpy.arange(0.0, 1.5, .001)
         for depth in range(14):
             plt.plot(xaxis, (xaxis*allSlopes[depth]) + slop, '-')
-        xaxis = numpy.arange(-1.5, 0.0, .05)
+        xaxis = numpy.arange(-1.5, 0.001, .001)
         for depth in range(14,28):
             plt.plot(xaxis, (xaxis*allSlopes[depth]) - slop, '-')
-        plt.savefig(graphPages, format = 'pdf')
+        plt.xlabel('Joint Effort, N-m')
+        plt.ylabel('Joint Displacement, radians')
+        if documentType == 0:
+            plt.savefig(Joint1Shifted, format = 'pdf')
+        elif documentType == 1:
+            plt.savefig(Joint2Shifted, format = 'pdf')
         plt.show()
             
             
@@ -118,9 +138,12 @@ def run():
         plt.plot(xaxis, ((A*(xaxis**3)) + (B*(xaxis**2)) + (C*xaxis) + D), '-')
         
         plt.plot(allDepths, allSlopes, '.')
-        #plt.set_xlabel('Depth')
-        #plt.set_ylabel('Slope')
-        plt.savefig(graphPages, format = 'pdf')
+        plt.xlabel('Distance from RCM, m')
+        plt.ylabel('Compliance, radians/N-m')
+        if documentType == 0:
+            plt.savefig(Joint1Stiffness, format = 'pdf')
+        elif documentType == 1:
+            plt.savefig(Joint2Stiffness, format = 'pdf')
         plt.show()
         A,B,C,D = numpy.polyfit(allDepths, allSlopes, 3)
         csv_file_name = 'ForceTestingDataJointSpace/force_joint_space_data_model_output_for_joint_' + str(documentType) +  '.csv'
@@ -128,7 +151,7 @@ def run():
         f = open(csv_file_name, 'wb')
         writer = csv.writer(f)
         writer.writerow([ A, B, C, D ])
-
+        
         """
         #3D graphing
 
@@ -152,6 +175,11 @@ def run():
         ax.plot_wireframe( totalEffort, totalDX, totalDepth)
         plt.show()
         """
-    graphPages.close()
-    
+
+    Joint1Data.close()
+    Joint1Shifted.close()
+    Joint1Stiffness.close()
+    Joint2Data.close()
+    Joint2Shifted.close()
+    Joint2Stiffness.close()
 run()
