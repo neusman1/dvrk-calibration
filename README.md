@@ -1,64 +1,43 @@
 # Calibration for dVRK
 (This readme is incomplete and undergoing edits)
 
-## Using the DH Calibration 
-#### (Step One)
-
-
-use dh calib to modify offsets in json file
-
-```json
-```
-Make sure to restart the consol after making changes to the json file
-
-####(Step Two)----needs to be finished
-
 ## Creating a predictive model to evealuate tooltip deflection
-### Setting up the nodes
 
-set up nodes
-(make sure the atracsys and optoForce are on) 
-(ensure you are in the dialout group by using the "id" comand )
+All force compliance work can be found in the folder named: "JointForceTesting" all other folders can be disreguarded as old work.
+
+###First:
+Start up the dVRK console
 
 ```sh
 rosrun dvrk_robot dvrk_console_json -j console-PSM2.json
-rosrun atracsys_ros atracsys_json
-rosrun optoforce_ros optoforce_json -s /dev/ttyACM0 -j OMD-10-SE-10N.json
-
-//for the optoforce, the exact directory may need to be specified:
-rosrun optoforce_ros optoforce_json -s /dev/ttyACM0 -j /home/neusman1/catkin_ws/src/cisst-saw/sawOptoforceSensor/share/OMD-10-SE-10N.json
 ```
 
-While testing, it's good to watch the values using rostopic echo:
+###Second:
+Run force_joint_space_data_collection.py
+
 ```sh
-rostopic echo /dvrk/PSM3/wrench_body_current
-rostopic echo /atracsys/fiducials 
-rostopic echo /optoforce/wrench
+python force_joint_space_data_collection.py
 ```
 
+When running the data collection, the varibales dX and jointUnderTesting can be changed. dX will alter the poistive/negative direction and amount of joint movement (Typically +-0.00025 was used). jointUnderTesting can be changed from index 0 or 1.
 
-### get the transformation matrix
-This will save locally a transformation matrix for the atracsys to be put in the cartesian field of the dvrk
+After running, a CSV file will be created. After 4 tests--each joint positive and negative--there will be 4 CSVs.
+
+###Third:
+
+The python script force_joint_space_graphing_evaluation.py can now be run:
+
 ```sh
-python atracsys-dvrk-cartesian-calibration.py PSM2
+python force_joint_space_graphing_evaluation.py
 ```
 
-### collect data
-Run the data cllection in shell as follows
-```sh
- python force_data_collection.py PSM3
-```
-Usualy the data collection is run at 5 depths (z positions), for the x, y and z axis. Data is gathered 10 times at each depth with forces being applied to each of three axis. It is suggested that the transfomration matrix is retaken at least once durring data collection
+This will take all data files (with proper name "force_joint_space_data_collection_output....." from the local folder "ForceTestingDataJointSpace" to which the data collection saves each csv, and create a compliance model based upon the force, depth and displacment.
+A final csv will be saved for each joint which was tested. The csv will have the four A,B,C and D vaules whcih represent the coeefeicents of an equation y = Ax^3+Bx^2+Cx+D. The equation is a model of depth (x) vs Compliance (y), where compliance in the slope of the force (x) vs deflection (y).
 
 
-### data interpretation
-```sh
-python force_evaluation.py
-```
-The above program will gather all data files in the ForceTestingData directory and create a predictive linear model. 
+###Fourth:
 
-### verify created model against test points
-```sh
-python force_test_points.py
-```
-The model can return the corrected and uncorrected error of 6 diferent test points across 3 axis, 2 depths
+Finally, the force_joint_space_check_model_against_existing_data.py code can be run to check the model against the existing data sets.
+It is important to note that the csv file must be speified for hte reader on line 19.
+
+Any and all questions can be directed to Nick Eusman at nick.eusman@gmail.com
