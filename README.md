@@ -1,7 +1,7 @@
 # Calibration for dVRK
 (This readme is incomplete and undergoing edits)
 
-## Creating a predictive model to evealuate tooltip deflection
+## Creating a predictive model to evaluate tooltip deflection
 
 All force compliance work can be found in the folder named: "JointForceTesting" all other folders can be disreguarded as old work.
 
